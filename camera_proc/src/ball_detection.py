@@ -3,11 +3,14 @@ import cv2 as cv
 import numpy as np
 import time
 import rospy
+from ball_detection.msg import ball_detection
 
 
 if __name__ == '__main__':
     rospy.init_node("ball_detection")
-    pub = rospy.Publisher("ballDetect2fetchBall", )
+    pub = rospy.Publisher("ballDetect2fetchBall", ball_detection)
+
+    msg_send = ball_detection
     
     pipeline = (
             "nvarguscamerasrc ! "
@@ -27,11 +30,7 @@ if __name__ == '__main__':
     lower_pink = np.array([140, 100, 50])   # Lower bound for pink color in HSV
     upper_pink = np.array([170, 255, 255])  # Upper bound for pink color in HSV
 
-    times = []
-    begin = time.time()
-
-
-    while time.time()-begin < 10:
+    while not rospy.is_shutdown():
         ret, frame = video.read()
         if not ret: break
 
@@ -44,10 +43,9 @@ if __name__ == '__main__':
         
         if circles is not None:
             # column, row, size (radius of ball in pixels)
-            c, r, s = circles[0,0,0], circles[0,0,1], circles[0,0,2]
-            # print(f"{c}, {r}, {s}\n")
-        #     file.write(f"{c}, {r}, {s}\n")
-        # else:
-        #     file.write(f"-1, -1, -1\n")
+            msg_send.c, msg_send.r, msg_send.s = circles[0,0,0], circles[0,0,1], circles[0,0,2]
+        else:
+            msg_send.c, msg_send.r, msg_send.s = -1, -1, -1
+        pub.publish(msg_send)
 
     video.release()
