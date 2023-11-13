@@ -1,6 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import math
 import numpy as np
+import rospy
+import ball_detection
 
 near_edge_threshold = 0.1
 center_threshold = 0.05
@@ -40,8 +42,6 @@ def return_to_sender():
 def send_uart(data):
     pass
 
-input_file = open("ball_pos_data.txt", 'r')
-output_file = open("out_pos.txt", "w")
 
 c_values = []
 r_values = []
@@ -55,12 +55,11 @@ last_c, last_r, last_s = -1, -1, -1
 frames_caught = 0
 
 # -1 y means continue with same lateral velocity
-# x and y are in m's and r is in radians
+# y is in m's and r is in radians
 y, r = -1, 0
 
-for line in input_file:
-    values = line.strip().split(', ')
-    c, r, s = map(int, values)
+def fetch(data)
+    c, r, s = data
 
     last_c, last_r, last_s = c, r, s
     c_values.append(c)
@@ -101,15 +100,9 @@ for line in input_file:
 
     y_values.append(y)
     r_values.append(r)
-    output_file.write(f"{y}, {r}\n")
     send_uart(y, r)
 
-
-
-
-# return to sender should be easy. prob can find online a library that will take all the IMU
-# data and turn it into positions. then just send that initial pos to MCU
-
-
-input_file.close()
-output_file.close()
+if __name__ == '__main__':
+    rospy.init_node('fetch_bot')
+    rospy.Subscriber("ballDetect2fetchBall", ball_detection, fetch)
+    rospy.spin()

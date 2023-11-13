@@ -1,9 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import cv2 as cv 
 import numpy as np
 import time
 import rospy
-from ball_detection.msg import ball_detection
+import ball_detection
 
 
 if __name__ == '__main__':
