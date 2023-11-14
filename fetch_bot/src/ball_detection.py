@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 import cv2 as cv 
 import numpy as np
-import time
 import rospy
-import ball_detection
+from fetch_bot.msg import BallPosImg
 
 
 if __name__ == '__main__':
     rospy.init_node("ball_detection")
-    pub = rospy.Publisher("ballDetect2fetchBall", ball_detection)
+    pub = rospy.Publisher("ballDetect2fetchBall", BallPosImg)
 
-    msg_send = ball_detection
+    msg_send = BallPosImg()
     
     pipeline = (
             "nvarguscamerasrc ! "
@@ -39,7 +38,7 @@ if __name__ == '__main__':
 
         blurFrame = cv.GaussianBlur(pink_mask, (17,17), 0)
         circles = cv.HoughCircles(blurFrame, cv.HOUGH_GRADIENT, 1.4, 5000,
-                                param1=170, param2=20, minRadius=0, maxRadius=100)
+                                param1=170, param2=20, minRadius=0, maxRadius=120)
         
         if circles is not None:
             # column, row, size (radius of ball in pixels)

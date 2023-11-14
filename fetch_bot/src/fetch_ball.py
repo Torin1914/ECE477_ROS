@@ -2,7 +2,8 @@
 import math
 import numpy as np
 import rospy
-import ball_detection
+import time
+from fetch_bot.msg import BallPosImg
 
 near_edge_threshold = 0.1
 center_threshold = 0.05
@@ -20,6 +21,24 @@ center_right = frame_width_center + center_width / 2
 
 catchable_ball_size = 85 # something like this
 catchable_ball_row = 660 # something like this
+
+c_values = []
+r_values = []
+s_values = []
+
+y_values = []
+r_values = []
+
+last_c, last_r, last_s = -1, -1, -1
+
+frames_caught = 0
+
+# -1 y means continue with same lateral velocity
+# y is in m's and r is in radians
+y, r = -1, 0
+
+start = 0
+count = 0
 
 def isInCenter(c):
     if c > center_left and c < center_right:
@@ -42,24 +61,8 @@ def return_to_sender():
 def send_uart(data):
     pass
 
-
-c_values = []
-r_values = []
-s_values = []
-
-y_values = []
-r_values = []
-
-last_c, last_r, last_s = -1, -1, -1
-
-frames_caught = 0
-
-# -1 y means continue with same lateral velocity
-# y is in m's and r is in radians
-y, r = -1, 0
-
-def fetch(data)
-    c, r, s = data
+def fetch(ball_pos_img: BallPosImg):
+    c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
 
     last_c, last_r, last_s = c, r, s
     c_values.append(c)
@@ -72,7 +75,7 @@ def fetch(data)
         if last_c == -1 and last_r == -1 and last_s == -1:
             # wait until see ball
             # this prob isn't right because ball could easily flicker out two frames in a row
-            continue
+            pass
         else:
             # if last ball pos is near left or right edge then move robot that direction
             if last_c <= near_edge_threshold * frame_width:
@@ -101,8 +104,21 @@ def fetch(data)
     y_values.append(y)
     r_values.append(r)
     send_uart(y, r)
+    print(f"Y: {y}, R: {r}")
+
+start = 0
+count = 0
+
+def fetch2(ball_pos_img: BallPosImg):
+    c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
+    print(f"C: {c}, R: {r}, S: {s}")
+    count += 1
+    t = time.time() - start
+    if t > 20:
+        print(count/t)
 
 if __name__ == '__main__':
     rospy.init_node('fetch_bot')
-    rospy.Subscriber("ballDetect2fetchBall", ball_detection, fetch)
+    start = time.time()
+    rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch2)
     rospy.spin()
