@@ -111,6 +111,8 @@ def fetch(ball_pos_img: BallPosImg):
             # start return to sender
             msg_send.run = True
             pubRTS.publish(msg_send)
+
+            # end sending data to Drive
     else:
         # Calculate horizontal angle based on the camera's FOV
         r = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
@@ -122,6 +124,7 @@ def fetch(ball_pos_img: BallPosImg):
     msg_send = BallPos()
     msg_send.y = y
     msg_send.r = r
+    pubDrive.publish(msg_send)
     print(f"Y: {y}, R: {r}")
 
 def fetch2(ball_pos_img: BallPosImg):
