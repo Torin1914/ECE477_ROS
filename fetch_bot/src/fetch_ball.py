@@ -5,8 +5,6 @@ import rospy
 import time
 from fetch_bot.msg import BallPosImg
 from fetch_bot.msg import NodeControl
-from fetch_bot.msg import BotControl
-from fetch_bot.msg import BallPos
 
 near_edge_threshold = 0.1
 center_threshold = 0.05
@@ -44,8 +42,10 @@ frames_caught = 0
 y, r = -1, 0
 
 pubBD = None
-pubDrive = None
+pubDriveDis = None
+pubDriveRot = None
 pubRTS = None
+pubArms = None
 
 def isInCenter(c):
     if c > center_left and c < center_right:
@@ -65,7 +65,7 @@ def fetch(ball_pos_img: BallPosImg):
 
     global frames_caught
     global y, r
-    global pubBD, pubDrive, pubRTS
+    global pubBD, pubDriveDis, pubDriveRot, pubRTS, pubArms
 
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
 
@@ -94,25 +94,19 @@ def fetch(ball_pos_img: BallPosImg):
                 r = last_r
     elif isCatchable(c, r, s):
         # close arms
-        msg_send = BotControl()
-        msg_send.close_arms = True
-        pubDrive.publish(msg_send)
+        pubArms.publish(True)
 
         # verify ball has been caught
         # TODO this doesn't make much sense or corrects for if we didn't actually catch the ball
         frames_caught += 1
         if frames_caught >= 3:
-            msg_send = NodeControl()
-
             # stop ball detection
-            msg_send.run = False
-            pubBD.publish(msg_send)
+            pubBD.publish(False)
 
             # start return to sender
-            msg_send.run = True
-            pubRTS.publish(msg_send)
+            pubRTS.publish(True)
 
-            # end sending data to Drive
+            # TODO end sending data to Drive
     else:
         # Calculate horizontal angle based on the camera's FOV
         r = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
@@ -120,11 +114,9 @@ def fetch(ball_pos_img: BallPosImg):
         # Calculate distance to the ball based on the apparent size
         y = dist_factor / s
 
-    # send ball position to drive
-    msg_send = BallPos()
-    msg_send.y = y
-    msg_send.r = r
-    pubDrive.publish(msg_send)
+    # send ball position to both drive nodes
+    pubDriveDis.publish(y)
+    pubDriveRot.publish(r)
     print(f"Y: {y}, R: {r}")
 
 def fetch2(ball_pos_img: BallPosImg):
@@ -141,10 +133,12 @@ def fetch2(ball_pos_img: BallPosImg):
         rospy.signal_shutdown("time limit")
 
 if __name__ == '__main__':
-    rospy.init_node('fetch_bot')
-    pubBD = rospy.Publisher("fetchBall2ballDetect", NodeControl)
-    pubRTS = rospy.Publisher("fetchBall2return2sender", NodeControl)
-    pubDrive = rospy.Publisher("fetchBall2drive", BallPos)
+    rospy.init_node('fetch_ball')
+    pubBD = rospy.Publisher("fetchBall2ballDetect", bool)
+    pubRTS = rospy.Publisher("fetchBall2return2sender", bool)
+    pubDriveDis = rospy.Publisher("fetchBall2driveDisplacement", float)
+    pubDriveRot = rospy.Publisher("fetchBall2driveRotation", float)
+    pubArms = rospy.Publisher("closeArmsUART", bool)
 
     start = time.time()
     rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch)

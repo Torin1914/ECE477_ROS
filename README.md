@@ -21,23 +21,33 @@ source devel/setup.bash
 ROS nodes:
 1. ball_detection
     sends ball_pos_img.msg to fetch_ball            done
-    receives node_control.msg from fetch_ball       done
+    receives stop bool from fetch_ball              done
 2. fetch_ball
     receives ball_pos_img.msg from ball_detection   done
-    sends node_control.msg to ball_detection        done
-    sends ball_pos.msg to drive                     done not tested
-    sends node_control.msg to return_to_sender      done not tested
-3. drive
-    receives ball_pos.msg from fetch_ball
-    sends bot_control.msg to uart
+    sends stop bool to ball_detection               done
+    sends y to driveDis                             done not tested
+    sends r to driveRot                             done not tested
+    sends start bool to return_to_sender            done not tested
+    sends close_arms bool to uart
+3. driveDis
+    receives y from fetch_ball
+    sends forward_power to uart
     receives imu.msg from uart
-4. uart
-    receives bot_control.msg from drive
-    sends imu.msg to drive
-5. return_to_sender
-    receives node_control.msg from fetch_ball
-        bool run here will be to start return process, node will already be running
-    sends ball_pos.msg to drive
+4. driveRot
+    received r from fetch_ball
+    sends rotation_power to uart
+    receives imu.msg from uart
+5. uart
+    receives forward_power from driveDis
+    receives rotation_power from driveRot
+    receives closeArms from fetchBall
+    sends imu.msg to driveDis
+    sends imu.msg to driveRot
+6. return_to_sender
+    receives start bool from fetch_ball to start return process
+    receives imu.msg from uart
+    sends y to driveDis
+    sends r to driveRot
 
 ROS msgs:
     ball_pos_img.msg:
