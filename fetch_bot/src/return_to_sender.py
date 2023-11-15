@@ -1,13 +1,14 @@
 import rospy
+import math as m
 from fetch_bot.msg import IMU
+from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 
-accelX_values = []
-accelY_values = []
-accelZ_values = []
+displaceX, displaceY = 0, 0
+velX, velY = 0, 0
+adisplace = 0
 
-gyroX_values = []
-gyroY_values = []
-gyroZ_values = []
+dt = 1.0/60
 
 pubDriveDis = None
 pubDriveRot = None
@@ -17,33 +18,29 @@ def return_ball(data: bool):
 
     global pubDriveRot, pubDriveDis
 
-    # do some wack math to calc y and r
-
-    y, r = 0, 0
+    y = m.sqrt(displaceX**2 + displaceY**2)
 
     pubDriveDis.publish(y)
-    pubDriveRot.publish(r)
+    pubDriveRot.publish(adisplace)
 
 
+def integrate(data: IMU):
+    global displaceX, displaceY, velX, velY, adisplace
 
-def accumulate(data: IMU):
-    global accelY_values, accelX_values, accelZ_values
-    global gyroX_values, gyroY_values, gyroZ_values
+    displaceX += velX * dt + data.accelx * dt**2 / 2
+    displaceY += velY * dt + data.accely * dt**2 / 2
 
-    accelX_values.append(data.accel_x)
-    accelY_values.append(data.accel_y)
-    accelZ_values.append(data.accel_z)
+    velX += data.accelx * dt
+    velY += data.accely * dt
 
-    gyroX_values.append(data.gyro_x)
-    gyroY_values.append(data.gyro_y)
-    gyroZ_values.append(data.gyro_z)
+    adisplace += data.gyroz * dt
 
 if __name__ == '__main__':
     rospy.init_node('return_to_sender')
     
-    rospy.Subscriber("uart2return2sender", IMU, accumulate)
-    rospy.Subscriber("fetchBall2return2sender", bool, return_ball)
+    rospy.Subscriber("uart2return2sender", IMU, integrate)
+    rospy.Subscriber("fetchBall2return2sender", Bool, return_ball)
 
-    pubDriveDis = rospy.Publisher("return2sender2driveDisplacement", float)
-    pubDriveRot = rospy.Publisher("return2sender2driveRotation", float)
+    pubDriveDis = rospy.Publisher("return2sender2driveDisplacement", Float32)
+    pubDriveRot = rospy.Publisher("return2sender2driveRotation", Float32)
     rospy.spin()

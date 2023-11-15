@@ -44,10 +44,10 @@ ROS nodes:
     sends imu.msg to driveDis
     sends imu.msg to driveRot
 6. return_to_sender
-    receives start bool from fetch_ball to start return process
-    receives imu.msg from uart
-    sends y to driveDis
-    sends r to driveRot
+    receives start bool from fetch_ball             done not tested
+    receives imu.msg from uart                      done not tested
+    sends y to driveDis                             done not tested
+    sends r to driveRot                             done not tested
 
 ROS msgs:
     ball_pos_img.msg:
