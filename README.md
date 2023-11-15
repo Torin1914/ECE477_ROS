@@ -40,7 +40,7 @@ ROS nodes:
 5. uart
     receives forward_power from driveDis
     receives rotation_power from driveRot
-    receives closeArms from fetchBall
+    receives closeArms from fetchBall               done not tested
     sends imu.msg to driveDis
     sends imu.msg to driveRot
     sends IMU.msg to return_to_sender

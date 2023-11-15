@@ -6,7 +6,7 @@ from fetch_bot.msg import BallPosImg
 from std_msgs.msg import Bool
 
 def shutdown(data: bool):
-    if data == False:
+    if data:
         rospy.signal_shutdown("Ball detection is over")
 
 if __name__ == '__main__':

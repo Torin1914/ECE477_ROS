@@ -102,7 +102,7 @@ def fetch(ball_pos_img: BallPosImg):
         frames_caught += 1
         if frames_caught >= 3:
             # stop ball detection
-            pubBD.publish(False)
+            pubBD.publish(True)
 
             # start return to sender
             pubRTS.publish(True)
@@ -128,7 +128,7 @@ def fetch2(ball_pos_img: BallPosImg):
     t = time.time() - start
     if t > 10:
         print(count/t)
-        pubBD.publish(False)
+        pubBD.publish(True)
         rospy.signal_shutdown("time limit")
 
 if __name__ == '__main__':

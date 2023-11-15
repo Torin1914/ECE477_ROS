@@ -109,10 +109,11 @@ class PosData:
 
 if __name__ == "__main__":
 
+	UART = UART()
 	rospy.init_node("UART")
 
-	rospy.Subscriber("closeArmsUART", Bool)
-	
-	UART = UART()
+	rospy.Subscriber("closeArmsUART", Bool, UART.servo_control)
+	# rospy.Subscriber("driveRot2uart", Float32, UART.)
+
 	while True:
 		UART.receive_data()
