@@ -51,10 +51,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   BallPosImg.msg
-  BallPos.msg
-  BotControl.msg
+  Drive.msg
   IMU.msg
-  NodeControl.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -167,6 +165,7 @@ catkin_install_python(PROGRAMS
   src/ball_detection.py
   src/fetch_ball.py
   src/UART.py
+  src/return_to_sender.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -4,6 +4,7 @@ import numpy as np
 import rospy
 import time
 from fetch_bot.msg import BallPosImg
+from fetch_bot.msg import Drive
 from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 
@@ -43,8 +44,7 @@ frames_caught = 0
 y, r = -1, 0
 
 pubBD = None
-pubDriveDis = None
-pubDriveRot = None
+pubDrive = None
 pubRTS = None
 pubArms = None
 
@@ -66,9 +66,10 @@ def fetch(ball_pos_img: BallPosImg):
 
     global frames_caught
     global y, r
-    global pubBD, pubDriveDis, pubDriveRot, pubRTS, pubArms
+    global pubBD, pubDrive, pubRTS, pubArms
 
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
+    print(f"C: {c}, R: {r}, S: {s}")
 
     last_c, last_r, last_s = c, r, s
     c_values.append(c)
@@ -115,10 +116,11 @@ def fetch(ball_pos_img: BallPosImg):
         # Calculate distance to the ball based on the apparent size
         y = dist_factor / s
 
-    # send ball position to both drive nodes
-    pubDriveDis.publish(y)
-    pubDriveRot.publish(r)
-    print(f"Y: {y}, R: {r}")
+    # send motor power percents to uart
+    msg = Drive()
+    msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
+    msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+    pubDrive.publish(msg)
 
 def fetch2(ball_pos_img: BallPosImg):
     global count
@@ -135,9 +137,8 @@ if __name__ == '__main__':
     rospy.init_node('fetch_ball')
     pubBD = rospy.Publisher("fetchBall2ballDetect", Bool)
     pubRTS = rospy.Publisher("fetchBall2return2sender", Bool)
-    pubDriveDis = rospy.Publisher("fetchBall2driveDisplacement", Float32)
-    pubDriveRot = rospy.Publisher("fetchBall2driveRotation", Float32)
     pubArms = rospy.Publisher("closeArmsUART", Bool)
+    pubDrive = rospy.Publisher("drive", Drive)
 
     start = time.time()
     rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch)

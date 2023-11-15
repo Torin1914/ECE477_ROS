@@ -7,7 +7,7 @@ from std_msgs.msg import Bool
 
 def shutdown(data: bool):
     if data:
-        rospy.signal_shutdown("Ball detection is over")
+        rospy.signal_shutdown("STOP BALL DETECTION")
 
 if __name__ == '__main__':
     rospy.init_node("ball_detection")

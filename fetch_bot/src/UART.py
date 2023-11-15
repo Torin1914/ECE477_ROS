@@ -1,9 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 import time
 import serial
 import rospy
 from std_msgs.msg import Bool
-from std_msgs.msg import Float32
+from fetch_bot.msg import Drive
+from fetch_bot.msg import IMU
+
+pub = None
 
 class UART:
 	def __init__(self):
@@ -21,8 +24,8 @@ class UART:
 		time.sleep(1)
 
 	#SEND
-	def motor_controls(self, forward_effort, turning_effort):
-		self.m_serial_port.write(bytearray([85, 0, forward_effort, turning_effort + 100, 0, 0, 0, 0]))
+	def motor_controls(self, data):
+		self.m_serial_port.write(bytearray([85, 0, data.forward, data.rotation + 100, 0, 0, 0, 0]))
 
 	def servo_controls(self, actuated):
 		self.m_serial_port.write(bytearray([85, 1, actuated, 0, 0, 0, 0, 0]))
@@ -77,43 +80,51 @@ class UART:
 			
 class PosData:
 	def __init__(self):
-
-		self.m_accelx = 0 #m/s2
-		self.m_accely = 0
-		self.m_accelx = 0
-		self.m_gyrox = 0 #deg/s
-		self.m_gyroy = 0
-		self.m_gyroz = 0
+		self.msg = IMU()
+		self.msg.accelx = 0 #m/s2
+		self.msg.accely = 0
+		self.msg.gyroz = 0 #deg/s
 
 		self.G_SENSITIVITY = 8.75
 		self.A_SENSITIVITY = .061
+
+		self.count = 0
 	
 	def new_accelx(self, raw):
-		self.m_accelx = raw * self.A_SENSITIVITY / 1000 * 9.81
+		self.msg.accelx = raw * self.A_SENSITIVITY / 1000 * 9.81
+		self.publish()
 	
 	def new_accely(self, raw):
-		self.m_accely = raw * self.A_SENSITIVITY / 1000 * 9.81
-
-	def new_accelz(self, raw):
-		self.m_accelz = raw * self.A_SENSITIVITY / 1000 * 9.81
-
-	def new_gyrox(self, raw):
-		self.m_gyrox = raw * self.G_SENSITIVITY / 1000
-
-	def new_gyroy(self, raw):
-		self.m_gyroy = raw * self.G_SENSITIVITY / 1000
+		self.msg.accely = raw * self.A_SENSITIVITY / 1000 * 9.81
+		self.publish()
 
 	def new_gyroz(self, raw):
-		self.m_gyroz = raw * self.G_SENSITIVITY / 1000
+		self.msg.gyroz = raw * self.G_SENSITIVITY / 1000
+		self.publish()
 
+	def publish(self):
+		global pub
+		count += 1
+		if count == 3:
+			pub.publish(self.msg)
+			count = 0
+
+def fakeMotors(data: Drive):
+	print(f"F: {data.forward}, R: {data.rotation}")
+
+def fakeServo(data: bool):
+	print(f"Close arms? {data}")
 
 if __name__ == "__main__":
-
-	UART = UART()
+	# UART = UART()
 	rospy.init_node("UART")
+	# rospy.Subscriber("closeArmsUART", Bool, UART.servo_control)
+	# rospy.Subscriber("drive", Drive, UART.motor_controls)
+	rospy.Subscriber("closeArmsUART", Bool, fakeServo)
+	rospy.Subscriber("drive", Drive, fakeMotors)
 
-	rospy.Subscriber("closeArmsUART", Bool, UART.servo_control)
-	# rospy.Subscriber("driveRot2uart", Float32, UART.)
+	pub = rospy.Publisher("uart2return2sender", IMU)
+	rospy.spin()
 
-	while True:
-		UART.receive_data()
+	# while True:
+	# 	UART.receive_data()
