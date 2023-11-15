@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np
 import rospy
 from fetch_bot.msg import BallPosImg
+from std_msgs.msg import Bool
 
 def shutdown(data: bool):
     if data == False:
@@ -11,7 +12,7 @@ def shutdown(data: bool):
 if __name__ == '__main__':
     rospy.init_node("ball_detection")
     pub = rospy.Publisher("ballDetect2fetchBall", BallPosImg)
-    rospy.Subscriber("fetchBall2ballDetect", bool, shutdown)
+    rospy.Subscriber("fetchBall2ballDetect", Bool, shutdown)
 
     msg_send = BallPosImg()
     

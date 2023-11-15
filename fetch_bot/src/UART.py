@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 import time
 import serial
+import rospy
+from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 
 class UART:
 	def __init__(self):
@@ -17,6 +20,7 @@ class UART:
 		# Wait a second to let the port initialize
 		time.sleep(1)
 
+	#SEND
 	def motor_controls(self, forward_effort, turning_effort):
 		self.m_serial_port.write(bytearray([85, 0, forward_effort, turning_effort + 100, 0, 0, 0, 0]))
 
@@ -26,6 +30,7 @@ class UART:
 	def IMU_request(self):
 		self.m_serial_port.write(bytearray([85, 4, 0, 0, 0, 0, 0, 0]))
 	
+	#RECEIVE
 	def invalid_message(self):
 		print("INVALID MESSAGE")
 	
@@ -95,8 +100,6 @@ class PosData:
 	def new_gyrox(self, raw):
 		self.m_gyrox = raw * self.G_SENSITIVITY / 1000
 
-		print("GYRO X DATA IS " + str(self.m_gyrox))
-
 	def new_gyroy(self, raw):
 		self.m_gyroy = raw * self.G_SENSITIVITY / 1000
 
@@ -105,6 +108,11 @@ class PosData:
 
 
 if __name__ == "__main__":
+
+	rospy.init_node("UART")
+
+	rospy.Subscriber("closeArmsUART", Bool)
+	
 	UART = UART()
 	while True:
 		UART.receive_data()

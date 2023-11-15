@@ -43,6 +43,7 @@ ROS nodes:
     receives closeArms from fetchBall
     sends imu.msg to driveDis
     sends imu.msg to driveRot
+    sends IMU.msg to return_to_sender
 6. return_to_sender
     receives start bool from fetch_ball             done not tested
     receives imu.msg from uart                      done not tested

@@ -4,7 +4,8 @@ import numpy as np
 import rospy
 import time
 from fetch_bot.msg import BallPosImg
-from fetch_bot.msg import NodeControl
+from std_msgs.msg import Bool
+from std_msgs.msg import Float32
 
 near_edge_threshold = 0.1
 center_threshold = 0.05
@@ -127,18 +128,16 @@ def fetch2(ball_pos_img: BallPosImg):
     t = time.time() - start
     if t > 10:
         print(count/t)
-        msg_send = NodeControl()
-        msg_send.run = False
-        pubBD.publish(msg_send)
+        pubBD.publish(False)
         rospy.signal_shutdown("time limit")
 
 if __name__ == '__main__':
     rospy.init_node('fetch_ball')
-    pubBD = rospy.Publisher("fetchBall2ballDetect", bool)
-    pubRTS = rospy.Publisher("fetchBall2return2sender", bool)
-    pubDriveDis = rospy.Publisher("fetchBall2driveDisplacement", float)
-    pubDriveRot = rospy.Publisher("fetchBall2driveRotation", float)
-    pubArms = rospy.Publisher("closeArmsUART", bool)
+    pubBD = rospy.Publisher("fetchBall2ballDetect", Bool)
+    pubRTS = rospy.Publisher("fetchBall2return2sender", Bool)
+    pubDriveDis = rospy.Publisher("fetchBall2driveDisplacement", Float32)
+    pubDriveRot = rospy.Publisher("fetchBall2driveRotation", Float32)
+    pubArms = rospy.Publisher("closeArmsUART", Bool)
 
     start = time.time()
     rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch)
