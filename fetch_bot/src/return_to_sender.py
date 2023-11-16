@@ -42,8 +42,8 @@ def integrate(data: IMU):
     adisplace += data.gyroz * dt
 
 if __name__ == '__main__':
-    rospy.init_node('return_to_sender')
-    
+    rospy.init_node("return_to_sender")
+
     rospy.Subscriber("uart2return2sender", IMU, integrate)
     rospy.Subscriber("fetchBall2return2sender", Bool, return_ball)
 

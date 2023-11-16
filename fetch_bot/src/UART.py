@@ -116,15 +116,19 @@ def fakeServo(data: bool):
 	print(f"Close arms? {data}")
 
 if __name__ == "__main__":
-	# UART = UART()
+	# uart = UART()
 	rospy.init_node("UART")
-	# rospy.Subscriber("closeArmsUART", Bool, UART.servo_control)
-	# rospy.Subscriber("drive", Drive, UART.motor_controls)
+	# rospy.Subscriber("closeArmsUART", Bool, uart.servo_control)
+	# rospy.Subscriber("drive", Drive, uart.motor_controls)
 	rospy.Subscriber("closeArmsUART", Bool, fakeServo)
 	rospy.Subscriber("drive", Drive, fakeMotors)
 
 	pub = rospy.Publisher("uart2return2sender", IMU)
-	rospy.spin()
+	msg = IMU()
+	msg.accelx = 0
+	msg.accely = 0
+	msg.gyroz = 0
 
-	# while True:
+	while True:
+		pub.publish(msg)
 	# 	UART.receive_data()
