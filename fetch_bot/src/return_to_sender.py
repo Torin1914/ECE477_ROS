@@ -14,7 +14,7 @@ dt = 1.0/60
 pubUart = None
 
 def return_ball(data: bool):
-    if not data: return
+    # if not data: return
 
     print("RETURN TO SENDER NOW")
 
@@ -23,9 +23,12 @@ def return_ball(data: bool):
     y = m.sqrt(displaceX**2 + displaceY**2)
 
     msg = Drive()
-    msg.rotation = adisplace
-    msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+    msg.rotation = int(adisplace)
+    # msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+
+    msg.forward = 1234567
     pubUart.publish(msg)
+    rospy.signal_shutdown("return ball to sender")
 
 
 def integrate(data: IMU):
@@ -44,8 +47,8 @@ def integrate(data: IMU):
 if __name__ == '__main__':
     rospy.init_node("return_to_sender")
 
-    rospy.Subscriber("uart2return2sender", IMU, integrate)
     rospy.Subscriber("fetchBall2return2sender", Bool, return_ball)
+    rospy.Subscriber("uart2return2sender", IMU, integrate)
 
-    pubUart = rospy.Publisher("drive", Drive)
+    pubUart = rospy.Publisher("driveFinal", Drive)
     rospy.spin()

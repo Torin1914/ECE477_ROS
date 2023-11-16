@@ -18,7 +18,7 @@ run this cmd every time open new terminal when working with ROS
 source devel/setup.bash
 
 
-ROS nodes:  remember to chmod +x
+ROS nodes:  remember to chmod +x for new py files as nodes
 1. ball_detection
     sends BallPosImg.msg to fetch_ball              done
     receives stop bool from fetch_ball              done
@@ -26,16 +26,16 @@ ROS nodes:  remember to chmod +x
     receives BallPosImg.msg from ball_detection     done
     sends stop bool to ball_detection               done
     sends Drive.msg to uart                         done
-    sends start bool to return_to_sender            done not tested
-    sends close_arms bool to uart                   done not tested
+    sends start bool to return_to_sender            done
+    sends close_arms bool to uart                   done
 3. uart
     receives Drive.msg from fetch_ball              done
-    receives closeArms from fetchBall               done not tested
+    receives closeArms from fetchBall               done
     sends IMU.msg to return_to_sender               done
 4. return_to_sender
-    receives start bool from fetch_ball             done not tested
+    receives start bool from fetch_ball             done
     receives imu.msg from uart                      done
-    sends Drive.msg to uart                         done not tested
+    sends Drive.msg to uart                         done
 
 to run uart: i think it was
 sudo usermod -aG root $USER

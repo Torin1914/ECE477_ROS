@@ -5,8 +5,13 @@ import rospy
 from fetch_bot.msg import BallPosImg
 from std_msgs.msg import Bool
 
+video = None
+
 def shutdown(data: bool):
+    global video
     if data:
+        video.release()
+        print("ball detection stopped")
         rospy.signal_shutdown("STOP BALL DETECTION")
 
 if __name__ == '__main__':

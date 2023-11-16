@@ -134,7 +134,7 @@ def fetch2(ball_pos_img: BallPosImg):
     pubDrive.publish(msg)
     count += 1
     t = time.time() - start
-    if t > 20:
+    if t > 10:
         print(count/t)
         pubArms.publish(True)
         pubBD.publish(True)
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     pubDrive = rospy.Publisher("drive", Drive)
 
     start = time.time()
-    rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch)
+    rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch2)
     rospy.spin()
