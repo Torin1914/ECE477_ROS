@@ -27,6 +27,7 @@ def return_ball(data: bool):
     # msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
 
     msg.forward = 1234567
+    rospy.sleep(0.5)
     pubUart.publish(msg)
     rospy.signal_shutdown("return ball to sender")
 
