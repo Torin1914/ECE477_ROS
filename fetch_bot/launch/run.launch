@@ -1,0 +1,15 @@
+<launch>
+
+  <!-- Start Node 1 -->
+  <node name="ball detection" pkg="fetch_bot" type="ball_detection.py" output="screen"/>
+
+  <!-- Start Node 2 -->
+  <node name="fetch ball" pkg="fetch_bot" type="fetch_ball.py" output="screen"/>
+
+  <!-- Start Node 3 -->
+  <node name="uart" pkg="fetch_bot" type="UART.py" output="screen"/>
+
+  <!-- Start Node 4 -->
+  <node name="return to sender" pkg="fetch_bot" type="return_to_sender.py" output="screen"/>
+
+</launch>
