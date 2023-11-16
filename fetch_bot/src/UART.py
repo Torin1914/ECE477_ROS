@@ -69,12 +69,12 @@ class UART:
 				self.accel_x(byte1, byte2, byte3, byte4)
 			elif(ID == 6):
 				self.accel_y(byte1, byte2, byte3, byte4)
-			elif(ID == 7):
-				self.accel_z(byte1, byte2, byte3, byte4)
-			elif(ID == 8):
-				self.gyro_x(byte1, byte2, byte3, byte4)
-			elif(ID == 9):
-				self.gyro_y(byte1, byte2, byte3, byte4)
+			# elif(ID == 7):
+			# 	self.accel_z(byte1, byte2, byte3, byte4)
+			# elif(ID == 8):
+			# 	self.gyro_x(byte1, byte2, byte3, byte4)
+			# elif(ID == 9):
+			# 	self.gyro_y(byte1, byte2, byte3, byte4)
 			elif(ID == 10):
 				self.gyro_z(byte1, byte2, byte3, byte4)
 			
@@ -104,10 +104,11 @@ class PosData:
 
 	def publish(self):
 		global pub
-		count += 1
-		if count == 3:
+		self.count += 1
+		if self.count == 3:
+			print("received imu data")
 			pub.publish(self.msg)
-			count = 0
+			self.count = 0
 
 def fakeMotors(data: Drive):
 	print(f"F: {data.forward}, R: {data.rotation}")
@@ -116,7 +117,7 @@ def fakeServo(data: bool):
 	print(f"Close arms? {data}")
 
 if __name__ == "__main__":
-	# uart = UART()
+	uart = UART()
 	rospy.init_node("UART")
 	# rospy.Subscriber("closeArmsUART", Bool, uart.servo_control)
 	# rospy.Subscriber("drive", Drive, uart.motor_controls)
@@ -124,11 +125,11 @@ if __name__ == "__main__":
 	rospy.Subscriber("drive", Drive, fakeMotors)
 
 	pub = rospy.Publisher("uart2return2sender", IMU)
-	msg = IMU()
-	msg.accelx = 0
-	msg.accely = 0
-	msg.gyroz = 0
+	# msg = IMU()
+	# msg.accelx = 0
+	# msg.accely = 0
+	# msg.gyroz = 0
 
 	while True:
-		pub.publish(msg)
-	# 	UART.receive_data()
+		# pub.publish(msg)
+		uart.receive_data()

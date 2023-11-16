@@ -126,11 +126,19 @@ def fetch2(ball_pos_img: BallPosImg):
     global count
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
     print(f"C: {c}, R: {r}, S: {s}")
+    r = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
+    y = dist_factor / s
+    msg = Drive()
+    msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
+    msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+    pubDrive.publish(msg)
     count += 1
     t = time.time() - start
-    if t > 10:
+    if t > 20:
         print(count/t)
+        pubArms.publish(True)
         pubBD.publish(True)
+        pubRTS.publish(True)
         rospy.signal_shutdown("time limit")
 
 if __name__ == '__main__':
