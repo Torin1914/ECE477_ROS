@@ -28,10 +28,17 @@ class UART:
 		self.m_serial_port.write(bytearray([85, 0, data.forward, data.rotation + 100, 0, 0, 0, 0]))
 
 	def servo_controls(self, actuated):
+		actuated = 1 if actuated else 0
 		self.m_serial_port.write(bytearray([85, 1, actuated, 0, 0, 0, 0, 0]))
 
 	def IMU_request(self):
 		self.m_serial_port.write(bytearray([85, 4, 0, 0, 0, 0, 0, 0]))
+
+	def return_ball(data: Drive):
+		print(f"************ final directions")
+		self.motor_controls(data)
+		rospy.sleep(0.5)
+		rospy.signal_shutdown("last control")
 	
 	#RECEIVE
 	def invalid_message(self):
@@ -106,7 +113,7 @@ class PosData:
 		global pub
 		self.count += 1
 		if self.count == 3:
-			print("received imu data")
+			# print("received imu data")
 			pub.publish(self.msg)
 			self.count = 0
 
@@ -116,30 +123,26 @@ def fakeMotors(data: Drive):
 def fakeServo(data: bool):
 	print(f"Close arms? {data}")
 
-def return_ball(data: Drive):
-	print(f"F: {data.forward}, R: {data.rotation}")
-	rospy.signal_shutdown("last control")
-
 if __name__ == "__main__":
 	uart = UART()
 	rospy.init_node("UART")
-	# rospy.Subscriber("closeArmsUART", Bool, uart.servo_control)
-	# rospy.Subscriber("drive", Drive, uart.motor_controls)
-	rospy.Subscriber("closeArmsUART", Bool, fakeServo)
-	rospy.Subscriber("drive", Drive, fakeMotors)
-	rospy.Subscriber("driveFinal", Drive, return_ball)
+	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls)
+	rospy.Subscriber("drive", Drive, uart.motor_controls)
+	# rospy.Subscriber("closeArmsUART", Bool, fakeServo)
+	# rospy.Subscriber("drive", Drive, fakeMotors)
+	rospy.Subscriber("driveFinal", Drive, uart.return_ball)
 
 	pub = rospy.Publisher("uart2return2sender", IMU)
-	msg = IMU()
-	msg.accelx = 0
-	msg.accely = 0
-	msg.gyroz = 0
+	# msg = IMU()
+	# msg.accelx = 0
+	# msg.accely = 0
+	# msg.gyroz = 0
 
-	time2 = time.time()
+	# time2 = time.time()
 	while not rospy.is_shutdown():
-		t = time.time()
-		if t - time2 > 0.1:
-			msg.accelx = t - 1700166500
-			time2 = t
-			pub.publish(msg)
-		# uart.receive_data()
+		# t = time.time()
+		# if t - time2 > 0.1:
+		# 	msg.accelx = t - 1700166500
+		# 	time2 = t
+		# 	pub.publish(msg)
+		uart.receive_data()

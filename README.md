@@ -38,6 +38,8 @@ ROS nodes:  remember to chmod +x for new py files as nodes
     receives imu.msg from uart                      done
     sends Drive.msg to uart                         done
 
-to run uart: i think it was
-sudo usermod -aG root $USER
-this should persist when restarting but ya
+to run uart:
+sudo chmod a+rw /dev/ttyTHS1
+
+to run whole thing:
+roslaunch fetch_bot run.launch

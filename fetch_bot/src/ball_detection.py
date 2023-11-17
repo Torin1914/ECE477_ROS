@@ -11,7 +11,7 @@ def shutdown(data: bool):
     global video
     if data:
         video.release()
-        print("ball detection stopped")
+        print("************ball detection stopped")
         rospy.signal_shutdown("STOP BALL DETECTION")
 
 if __name__ == '__main__':

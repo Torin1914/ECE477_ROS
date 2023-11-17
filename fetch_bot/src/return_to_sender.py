@@ -16,7 +16,7 @@ pubUart = None
 def return_ball(data: bool):
     # if not data: return
 
-    print("RETURN TO SENDER NOW")
+    print("************returning ball to sender")
 
     global pubUart
 
@@ -29,13 +29,14 @@ def return_ball(data: bool):
     msg.forward = 1234567
     rospy.sleep(0.5)
     pubUart.publish(msg)
+    rospy.sleep(0.5)
     rospy.signal_shutdown("return ball to sender")
 
 
 def integrate(data: IMU):
     global displaceX, displaceY, velX, velY, adisplace
 
-    print(f"AccelX: {data.accelx}, AccelY: {data.accely}, GyroZ: {data.gyroz}")
+    # print(f"AccelX: {data.accelx}, AccelY: {data.accely}, GyroZ: {data.gyroz}")
 
     displaceX += velX * dt + data.accelx * dt**2 / 2
     displaceY += velY * dt + data.accely * dt**2 / 2
