@@ -10,7 +10,7 @@ from std_msgs.msg import Float32
 
 near_edge_threshold = 0.1
 center_threshold = 0.05
-sensitivity = 0.5
+sensitivity = 0.8
 dist_factor = 16.1
 
 frame_width = 1280 # in pixels
@@ -72,7 +72,7 @@ def fetch(ball_pos_img: BallPosImg):
 
     frame_num += 1
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
-    # print(f"C: {c}, R: {r}, S: {s}")
+    print(f"C: {c}, R: {r}, S: {s}")
 
     c_values.append(c)
     r_values.append(r)
@@ -91,6 +91,7 @@ def fetch(ball_pos_img: BallPosImg):
             # drive forward
             y = 1
     elif isCatchable(c, r, s):
+        print("***********CATCHABLE************")
         if frames_caught == 0:
             # close arms
             pubArms.publish(True)
@@ -126,8 +127,21 @@ def fetch(ball_pos_img: BallPosImg):
 
     # send motor power percents to uart
     msg = Drive()
-    msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
+
+    # rotation
+    if -math.pi/4 <= r <= math.pi/4 and y > 1:
+        # Map the angle to the range -100 to 100
+        msg.rotation = int((r / (math.pi/4)) * 100 * sensitivity)
+    elif r < -math.pi/4 and y > 1:
+        msg.rotation = -100
+    elif y > 1:
+        msg.rotation = 100
+    else:
+        msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
+
+    # forward
     msg.forward = 106 if y > 1 else 75 if y > 0.25 else 0
+    
     pubDrive.publish(msg)
 
 def fetch2(ball_pos_img: BallPosImg):

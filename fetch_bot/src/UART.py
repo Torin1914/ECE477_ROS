@@ -2,6 +2,8 @@
 import time
 import serial
 import rospy
+import signal
+from functools import partial
 from std_msgs.msg import Bool
 from fetch_bot.msg import Drive
 from fetch_bot.msg import IMU
@@ -154,8 +156,16 @@ class PosData:
 			pub.publish(self.msg)
 			self.count = 0
 
+def shutdown(signum, frame, uart2: UART):
+	msg = Drive()
+	msg.forward = 0
+	msg.rotation = 0
+	uart2.motor_controls(msg)
+
 if __name__ == "__main__":
 	uart = UART()
+	shutdown2 = partial(shutdown, uart2=uart)
+	signal.signal(signal.SIGINT, shutdown2)
 	rospy.init_node("UART")
 	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls, queue_size=10)
 	rospy.Subscriber("drive", Drive, uart.motor_controls, queue_size=10)
