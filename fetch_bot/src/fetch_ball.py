@@ -69,7 +69,7 @@ def fetch(ball_pos_img: BallPosImg):
     global pubBD, pubDrive, pubRTS, pubArms
 
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
-    print(f"C: {c}, R: {r}, S: {s}")
+    # print(f"C: {c}, R: {r}, S: {s}")
 
     last_c, last_r, last_s = c, r, s
     c_values.append(c)
@@ -119,7 +119,7 @@ def fetch(ball_pos_img: BallPosImg):
     # send motor power percents to uart
     msg = Drive()
     msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
-    msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+    msg.forward = 106 if y > 1 else 75 if y > 0.25 else 0
     pubDrive.publish(msg)
 
 def fetch2(ball_pos_img: BallPosImg):

@@ -25,7 +25,7 @@ class UART:
 
 	#SEND
 	def motor_controls(self, data):
-		self.m_serial_port.write(bytearray([85, 0, data.forward, data.rotation + 100, 0, 0, 0, 0]))
+		self.m_serial_port.write(bytearray([85, 0, data.forward + 100, data.rotation + 100, 0, 0, 0, 0]))
 
 	def servo_controls(self, actuated):
 		actuated = 1 if actuated else 0
