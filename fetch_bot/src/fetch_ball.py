@@ -38,10 +38,11 @@ r_values = []
 last_c, last_r, last_s = -1, -1, -1
 
 frames_caught = 0
+last_caught_frame_num = 0
+frame_num = 0
 
-# -1 y means continue with same lateral velocity
 # y is in m's and r is in radians
-y, r = -1, 0
+y, r = 0, 0
 
 pubBD = None
 pubDrive = None
@@ -64,52 +65,59 @@ def fetch(ball_pos_img: BallPosImg):
     global c_values, r_values, s_values
     global last_c, last_r, last_s
 
-    global frames_caught
+    global frames_caught, frame_num, last_caught_frame_num
     global y, r
     global pubBD, pubDrive, pubRTS, pubArms
 
+
+    frame_num += 1
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
     print(f"C: {c}, R: {r}, S: {s}")
 
-    last_c, last_r, last_s = c, r, s
     c_values.append(c)
     r_values.append(r)
     s_values.append(s)
     
     # if don't see ball
     if c == -1 and r == -1 and s == -1:
-        # if didn't see ball on last frame
-        if last_c == -1 and last_r == -1 and last_s == -1:
-            # wait until see ball
-            # this prob isn't right because ball could easily flicker out two frames in a row
-            pass
+        # if last seen ball pos is near left or right edge then move robot that direction
+        if last_c <= near_edge_threshold * frame_width:
+            # turn left
+            r = -1 * sensitivity * camera_fov_deg
+        elif last_c >= (1 - near_edge_threshold) * frame_width:
+            # turn right
+            r = sensitivity * camera_fov_deg
         else:
-            # if last ball pos is near left or right edge then move robot that direction
-            if last_c <= near_edge_threshold * frame_width:
-                # turn left
-                r = -1 * sensitivity * camera_fov_deg
-            elif last_c >= (1 - near_edge_threshold) * frame_width:
-                # turn right
-                r = sensitivity * camera_fov_deg
-            else:
-                # rotate towards last seen location of ball
-                r = last_r
+            # drive forward
+            y = 1
     elif isCatchable(c, r, s):
-        # close arms
-        pubArms.publish(True)
+        if frames_caught == 0:
+            # close arms
+            pubArms.publish(True)
 
-        # verify ball has been caught
-        # TODO this doesn't make much sense or corrects for if we didn't actually catch the ball
-        frames_caught += 1
-        if frames_caught >= 3:
+            frames_caught += 1
+            last_caught_frame_num = frame_num
+        elif frames_caught >= 1 and frames_caught < 5:
+            if frame_num == last_caught_frame_num + 1:
+                frames_caught += 1
+                last_caught_frame_num = frame_num
+            else:
+                frames_caught = 0
+
+                # open arms
+                pubArms.publish(False)
+        elif frames_caught >= 5:
             # stop ball detection
             pubBD.publish(True)
 
             # start return to sender
             pubRTS.publish(True)
 
-            # TODO end sending data to Drive
+            # turn off fetch_ball node
+            rospy.sleep(0.5)
+            rospy.signal_shutdown("time limit")
     else:
+        last_c, last_r, last_s = c, r, s
         # Calculate horizontal angle based on the camera's FOV
         r = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
 
