@@ -140,7 +140,7 @@ def fetch(ball_pos_img: BallPosImg):
         msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
 
     # forward
-    msg.forward = 106 if y > 1 else 75 if y > 0.25 else 0
+    msg.forward = 106 if y > 1 else 75 if y > 0.25 else 60 if y > 0.1 else 0
     
     pubDrive.publish(msg)
 
