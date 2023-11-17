@@ -12,7 +12,7 @@ class UART:
 	def __init__(self):
 		self.m_serial_port = serial.Serial(
     		port="/dev/ttyTHS1",
-    		baudrate=115200,
+    		baudrate=230400,
     		bytesize=serial.EIGHTBITS,
     		parity=serial.PARITY_NONE,
     		stopbits=serial.STOPBITS_ONE,
@@ -126,11 +126,11 @@ def fakeServo(data: bool):
 if __name__ == "__main__":
 	uart = UART()
 	rospy.init_node("UART")
-	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls)
-	rospy.Subscriber("drive", Drive, uart.motor_controls)
+	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls, queue_size=10)
+	rospy.Subscriber("drive", Drive, uart.motor_controls, queue_size=10)
 	# rospy.Subscriber("closeArmsUART", Bool, fakeServo)
 	# rospy.Subscriber("drive", Drive, fakeMotors)
-	rospy.Subscriber("driveFinal", Drive, uart.return_ball)
+	rospy.Subscriber("driveFinal", Drive, uart.return_ball, queue_size=10)
 
 	pub = rospy.Publisher("uart2return2sender", IMU)
 	# msg = IMU()
