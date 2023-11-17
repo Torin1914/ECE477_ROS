@@ -43,3 +43,6 @@ sudo chmod a+rw /dev/ttyTHS1
 
 to run whole thing:
 roslaunch fetch_bot run.launch
+
+return to sender isn't going to work bc it doesn't stop running the motors
+need to keep uart and RTS on to make sure bot goes back to OG spot, then stop motors
