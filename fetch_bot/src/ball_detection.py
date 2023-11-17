@@ -16,8 +16,8 @@ def shutdown(data: bool):
 
 if __name__ == '__main__':
     rospy.init_node("ball_detection")
-    pub = rospy.Publisher("ballDetect2fetchBall", BallPosImg)
-    rospy.Subscriber("fetchBall2ballDetect", Bool, shutdown)
+    pub = rospy.Publisher("ballDetect2fetchBall", BallPosImg, queue_size=10)
+    rospy.Subscriber("fetchBall2ballDetect", Bool, shutdown, queue_size=10)
 
     msg_send = BallPosImg()
     

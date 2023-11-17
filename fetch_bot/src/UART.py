@@ -34,7 +34,7 @@ class UART:
 	def IMU_request(self):
 		self.m_serial_port.write(bytearray([85, 4, 0, 0, 0, 0, 0, 0]))
 
-	def return_ball(data: Drive):
+	def return_ball(self, data: Drive):
 		print(f"************ final directions")
 		self.motor_controls(data)
 		rospy.sleep(0.5)
@@ -95,54 +95,72 @@ class PosData:
 		self.G_SENSITIVITY = 8.75
 		self.A_SENSITIVITY = .061
 
+		self.accelx_adjust = 0
+		self.accely_adjust = 0
+		self.gyroz_adjust = 0
+		self.mean_accelx = 0
+		self.mean_accely = 0
+		self.mean_gyroz = 0
+
+		self.meanx_count = 0
+		self.meany_count = 0
+		self.meanz_count = 0
+
 		self.count = 0
 	
 	def new_accelx(self, raw):
-		self.msg.accelx = raw * self.A_SENSITIVITY / 1000 * 9.81
-		self.publish()
+		self.msg.accelx = (raw - self.accelx_adjust) * self.A_SENSITIVITY / 1000 * 9.81
+		if(self.meanx_count > 300):
+			self.publish()
+		elif(self.meanx_count == 300):
+			self.meanx_count += 1
+			self.mean_accelx += self.msg.accelx
+			self.mean_accelx /= 300
+			self.accelx_adust = self.mean_accelx
+		else:
+			self.meanx_count += 1
+			self.mean_accelx += self.msg.accelx
 	
 	def new_accely(self, raw):
-		self.msg.accely = raw * self.A_SENSITIVITY / 1000 * 9.81
-		self.publish()
+		self.msg.accely = (raw - self.accely_adjust) * self.A_SENSITIVITY / 1000 * 9.81
+		if(self.meany_count > 300):
+			self.publish()
+		elif(self.meany_count == 300):
+			self.meany_count += 1
+			self.mean_accely += self.msg.accely
+			self.mean_accely /= 300
+			self.accely_adust = self.mean_accely
+		else:
+			self.meany_count += 1
+			self.mean_accely += self.msg.accely
 
 	def new_gyroz(self, raw):
-		self.msg.gyroz = raw * self.G_SENSITIVITY / 1000
-		self.publish()
+		self.msg.gyroz = (raw - self.gyroz_adjust) * self.A_SENSITIVITY / 1000 * 9.81
+		if(self.meanz_count > 300):
+			self.publish()
+		elif(self.meanz_count == 300):
+			self.meanz_count += 1
+			self.mean_gyroz += self.msg.gyroz
+			self.mean_gyroz /= 300
+			self.gyroz_adust = self.mean_gyroz
+		else:
+			self.meanz_count += 1
+			self.mean_gyroz += self.msg.gyroz
 
 	def publish(self):
 		global pub
 		self.count += 1
 		if self.count == 3:
-			# print("received imu data")
 			pub.publish(self.msg)
 			self.count = 0
-
-def fakeMotors(data: Drive):
-	print(f"F: {data.forward}, R: {data.rotation}")
-
-def fakeServo(data: bool):
-	print(f"Close arms? {data}")
 
 if __name__ == "__main__":
 	uart = UART()
 	rospy.init_node("UART")
 	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls, queue_size=10)
 	rospy.Subscriber("drive", Drive, uart.motor_controls, queue_size=10)
-	# rospy.Subscriber("closeArmsUART", Bool, fakeServo)
-	# rospy.Subscriber("drive", Drive, fakeMotors)
 	rospy.Subscriber("driveFinal", Drive, uart.return_ball, queue_size=10)
 
-	pub = rospy.Publisher("uart2return2sender", IMU)
-	# msg = IMU()
-	# msg.accelx = 0
-	# msg.accely = 0
-	# msg.gyroz = 0
-
-	# time2 = time.time()
+	pub = rospy.Publisher("uart2return2sender", IMU, queue_size=10)
 	while not rospy.is_shutdown():
-		# t = time.time()
-		# if t - time2 > 0.1:
-		# 	msg.accelx = t - 1700166500
-		# 	time2 = t
-		# 	pub.publish(msg)
 		uart.receive_data()

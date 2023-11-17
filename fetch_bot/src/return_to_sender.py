@@ -52,5 +52,5 @@ if __name__ == '__main__':
     rospy.Subscriber("fetchBall2return2sender", Bool, return_ball)
     rospy.Subscriber("uart2return2sender", IMU, integrate)
 
-    pubUart = rospy.Publisher("driveFinal", Drive)
+    pubUart = rospy.Publisher("driveFinal", Drive, queue_size=10)
     rospy.spin()

@@ -144,11 +144,11 @@ def fetch2(ball_pos_img: BallPosImg):
 
 if __name__ == '__main__':
     rospy.init_node('fetch_ball')
-    pubBD = rospy.Publisher("fetchBall2ballDetect", Bool)
-    pubRTS = rospy.Publisher("fetchBall2return2sender", Bool)
-    pubArms = rospy.Publisher("closeArmsUART", Bool)
-    pubDrive = rospy.Publisher("drive", Drive)
+    pubBD = rospy.Publisher("fetchBall2ballDetect", Bool, queue_size=10)
+    pubRTS = rospy.Publisher("fetchBall2return2sender", Bool, queue_size=10)
+    pubArms = rospy.Publisher("closeArmsUART", Bool, queue_size=10)
+    pubDrive = rospy.Publisher("drive", Drive, queue_size=10)
 
     start = time.time()
-    rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch2)
+    rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch)
     rospy.spin()
