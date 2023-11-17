@@ -172,5 +172,17 @@ if __name__ == "__main__":
 	rospy.Subscriber("driveFinal", Drive, uart.return_ball, queue_size=10)
 
 	pub = rospy.Publisher("uart2return2sender", IMU, queue_size=10)
+	t = time.time()
+	flag = True
 	while not rospy.is_shutdown():
-		uart.receive_data()
+		t2 = time.time()
+		if t2 - t >= 1:
+			if flag:
+				uart.servo_controls(True)
+				flag = False
+			else:
+				uart.servo_controls(False)
+				flag = True
+			print(f"sent {flag}")
+			t = t2
+		# uart.receive_data()
