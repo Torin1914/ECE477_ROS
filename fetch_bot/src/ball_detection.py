@@ -30,9 +30,10 @@ if __name__ == '__main__':
             "video/x-raw, format=(string)BGR ! "
             "appsink sync=false drop=true"
     )
+    video = cv.VideoCapture(pipeline, cv.CAP_GSTREAMER)
+    
     #out_send = cv.VideoWriter('appsrc ! videoconvert ! nveglglessink sync=false', cv.CAP_GSTREAMER, 0, 30, (1280, 720))
 
-    video = cv.VideoCapture(pipeline, cv.CAP_GSTREAMER)
     if not video.isOpened():
         print("Camera not opened")
 
@@ -54,7 +55,7 @@ if __name__ == '__main__':
         if circles is not None:
             # column, row, size (radius of ball in pixels)
             msg_send.c, msg_send.r, msg_send.s = circles[0,0,0], circles[0,0,1], circles[0,0,2]
-            cv.circle(frame, (circles[0,0,0], circles[0,0,1]), circles[0,0,2], (255,0,0), 2)
+            #cv.circle(frame, (circles[0,0,0], circles[0,0,1]), circles[0,0,2], (255,0,0), 2)
 
         else:
             msg_send.c, msg_send.r, msg_send.s = -1, -1, -1
