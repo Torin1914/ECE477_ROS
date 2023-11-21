@@ -28,8 +28,9 @@ if __name__ == '__main__':
             "video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! "
             "videoconvert ! "
             "video/x-raw, format=(string)BGR ! "
-            "appsink sync=false"
+            "appsink sync=false drop=true"
     )
+    #out_send = cv.VideoWriter('appsrc ! videoconvert ! nveglglessink sync=false', cv.CAP_GSTREAMER, 0, 30, (1280, 720))
 
     video = cv.VideoCapture(pipeline, cv.CAP_GSTREAMER)
     if not video.isOpened():
@@ -53,8 +54,12 @@ if __name__ == '__main__':
         if circles is not None:
             # column, row, size (radius of ball in pixels)
             msg_send.c, msg_send.r, msg_send.s = circles[0,0,0], circles[0,0,1], circles[0,0,2]
+            cv.circle(frame, (circles[0,0,0], circles[0,0,1]), circles[0,0,2], (255,0,0), 2)
+
         else:
             msg_send.c, msg_send.r, msg_send.s = -1, -1, -1
         pub.publish(msg_send)
+        #out_send.write(frame)
+
 
     video.release()
