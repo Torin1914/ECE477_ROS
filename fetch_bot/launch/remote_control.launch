@@ -1,0 +1,11 @@
+<launch>
+
+  <!-- Start Node 1 -->
+  <node name="ball_detection" pkg="fetch_bot" type="ball_detection.py" output="screen"/>
+
+  <node name="gamepad" pkg="gamepad" type="gamepad_to_drive.py" output="screen"/>
+
+  <!-- Start Node 3 -->
+  <node name="UART" pkg="fetch_bot" type="UART.py" output="screen"/>
+
+</launch>
