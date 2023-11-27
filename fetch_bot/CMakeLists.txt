@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  roslaunch
 )
 
 ## System dependencies are found with CMake's conventions
@@ -51,10 +52,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   BallPosImg.msg
-  BallPos.msg
-  BotControl.msg
+  Drive.msg
   IMU.msg
-  NodeControl.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -167,6 +166,7 @@ catkin_install_python(PROGRAMS
   src/ball_detection.py
   src/fetch_ball.py
   src/UART.py
+  src/return_to_sender.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -192,11 +192,10 @@ catkin_install_python(PROGRAMS
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+install(FILES
+  launch/run.launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
 
 #############
 ## Testing ##
