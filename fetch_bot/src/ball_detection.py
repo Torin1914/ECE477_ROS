@@ -50,19 +50,19 @@ if __name__ == '__main__':
 
         blurFrame = cv.GaussianBlur(pink_mask, (17,17), 0)
         circles = cv.HoughCircles(blurFrame, cv.HOUGH_GRADIENT, 1.4, 5000,
-                                param1=170, param2=20, minRadius=0, maxRadius=200)
+                                param1=170, param2=20, minRadius=0, maxRadius=300)
         
         if circles is not None:
             # column, row, size (radius of ball in pixels)
             msg_send.c, msg_send.r, msg_send.s = circles[0,0,0], circles[0,0,1], circles[0,0,2]
             cv.circle(frame, (circles[0,0,0], circles[0,0,1]), circles[0,0,2], (0,255,0), 2)
-        # cv.imshow("", frame)
-        # if cv.waitKey(1) & 0xFF == ord('q'): break
-
+            # print(f"C: {msg_send.c}, R: {msg_send.r}, S: {msg_send.s}")
         else:
             msg_send.c, msg_send.r, msg_send.s = -1, -1, -1
         pub.publish(msg_send)
         # out_send.write(frame)
+        # cv.imshow("", frame)
+        # if cv.waitKey(1) & 0xFF == ord('q'): break
 
 
     video.release()
