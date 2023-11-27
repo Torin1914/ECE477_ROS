@@ -24,7 +24,7 @@ if __name__ == '__main__':
     pipeline = (
             "nvarguscamerasrc ! "
             "video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)120/1 ! "
-            "nvvidconv flip-method=0 ! "
+            "nvvidconv flip-method=2 ! "
             "video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! "
             "videoconvert ! "
             "video/x-raw, format=(string)BGR ! "
