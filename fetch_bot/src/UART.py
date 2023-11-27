@@ -28,6 +28,7 @@ class UART:
 	#SEND
 	def motor_controls(self, data):
 		self.m_serial_port.write(bytearray([85, 0, data.forward + 100, data.rotation + 100, 0, 0, 0, 0]))
+		pass
 
 	def servo_controls(self, actuated):
 		actuated = 1 if actuated else 0
@@ -161,6 +162,7 @@ def shutdown(signum, frame, uart2: UART):
 	msg.forward = 0
 	msg.rotation = 0
 	uart2.motor_controls(msg)
+	uart2.servo_controls(0)
 
 if __name__ == "__main__":
 	uart = UART()

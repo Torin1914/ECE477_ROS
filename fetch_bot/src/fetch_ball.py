@@ -9,7 +9,7 @@ from std_msgs.msg import Bool
 from std_msgs.msg import Float32
 
 near_edge_threshold = 0.1
-center_threshold = 0.05
+center_threshold = 0.15
 sensitivity = 0.8
 dist_factor = 16.1
 
@@ -22,8 +22,8 @@ center_width = frame_width * center_threshold
 center_left = frame_width_center - center_width / 2
 center_right = frame_width_center + center_width / 2
 
-catchable_ball_size = 85 # something like this
-catchable_ball_row = 660 # something like this
+catchable_ball_size = 165 # something like this
+catchable_ball_row = 525 # something like this
 
 start = 0
 count = 0
@@ -140,7 +140,7 @@ def fetch(ball_pos_img: BallPosImg):
         msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
 
     # forward
-    msg.forward = 106 if y > 1 else 75 if y > 0.25 else 60 if y > 0.1 else 0
+    msg.forward = 106 if y > 1 else 75 if y > 0.25 else 50 if y > 0.1 else 30
     
     pubDrive.publish(msg)
 
