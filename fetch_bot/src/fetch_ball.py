@@ -13,8 +13,8 @@ center_threshold = 0.1
 sensitivity = 0.8
 dist_factor = 16.1
 
-frame_width = 1280 # in pixels
-frame_height = 720 # in pixels
+frame_width = 1280.0 # in pixels
+frame_height = 720.0 # in pixels
 camera_fov_deg = 175.0  # in degrees
 
 frame_width_center = frame_width / 2
@@ -22,8 +22,8 @@ center_width = frame_width * center_threshold
 center_left = frame_width_center - center_width / 2
 center_right = frame_width_center + center_width / 2
 
-catchable_ball_size = 140 # something like this
-catchable_ball_row = 500 # something like this
+catchable_ball_size = 100.0 # something like this
+catchable_ball_row = 300.0 # something like this
 
 start = 0
 count = 0
@@ -32,17 +32,14 @@ c_values = []
 r_values = []
 s_values = []
 
-y_values = []
-r_values = []
-
 last_c, last_r, last_s = -1, -1, -1
 
 frames_caught = 0
 last_caught_frame_num = 0
 frame_num = 0
 
-# y is in m's and r is in radians
-y, r = 0, 0
+# dist is in m's and rot is in radians
+dist, rot = 0, 0
 
 pubBD = None
 pubDrive = None
@@ -66,8 +63,9 @@ def fetch(ball_pos_img: BallPosImg):
     global last_c, last_r, last_s
 
     global frames_caught, frame_num, last_caught_frame_num
-    global y, r
+    global dist, rot
     global pubBD, pubDrive, pubRTS, pubArms
+    global center_threshold, catchable_ball_row
 
 
     frame_num += 1
@@ -83,13 +81,13 @@ def fetch(ball_pos_img: BallPosImg):
         # if last seen ball pos is near left or right edge then move robot that direction
         if last_c <= near_edge_threshold * frame_width:
             # turn left
-            r = -1 * sensitivity * camera_fov_deg
+            rot = -1 * sensitivity
         elif last_c >= (1 - near_edge_threshold) * frame_width:
             # turn right
-            r = sensitivity * camera_fov_deg
+            rot = sensitivity
         else:
             # drive forward
-            y = 1
+            dist = 1
     elif isCatchable(c, r, s):
         print("***********CATCHABLE************")
         if frames_caught == 0:
@@ -98,11 +96,11 @@ def fetch(ball_pos_img: BallPosImg):
 
             # increase thresholds
             center_threshold = 0.5
-            catchable_ball_row = 400
+            catchable_ball_row = 200
 
             frames_caught += 1
             last_caught_frame_num = frame_num
-        elif frames_caught >= 1 and frames_caught < 5:
+        elif frames_caught >= 1 and frames_caught < 3:
             if frame_num == last_caught_frame_num + 1:
                 frames_caught += 1
                 last_caught_frame_num = frame_num
@@ -110,8 +108,8 @@ def fetch(ball_pos_img: BallPosImg):
                 frames_caught = 0
 
                 # decrease thresholds
-                center_threshold = 0.2
-                catchable_ball_row = 500
+                center_threshold = 0.1
+                catchable_ball_row = 300
 
                 # open arms
                 pubArms.publish(False)
@@ -128,49 +126,32 @@ def fetch(ball_pos_img: BallPosImg):
     else:
         last_c, last_r, last_s = c, r, s
         # Calculate horizontal angle based on the camera's FOV
-        r = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
+        rot = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
 
         # Calculate distance to the ball based on the apparent size
-        y = dist_factor / s
+        dist = dist_factor / s
 
-    # send motor power percents to uart
-    msg = Drive()
+    # print(f"rot: {rot}, dist: {dist}")
 
-    # rotation
-    if -math.pi/4 <= r <= math.pi/4 and y > 1:
-        # Map the angle to the range -100 to 100
-        msg.rotation = int((r / (math.pi/4)) * 100 * sensitivity)
-    elif r < -math.pi/4 and y > 1:
-        msg.rotation = -100
-    elif r > math.pi/4 and y > 1:
-        msg.rotation = 100
-    else:
-        msg.rotation = int((r / (math.pi/4)) * 100 * sensitivity**2)
+    if frames_caught == 0:
+        # send motor power percents to uart
+        msg = Drive()
 
-    # forward
-    msg.forward = 106 if y > 1 else 75 if y > 0.25 else 40 if y > 0.1 else 0
+        # rotation
+        if -math.pi/4 <= rot <= math.pi/4 and dist > 1:
+            # Map the angle to the range -100 to 100
+            msg.rotation = int((rot / (math.pi/4)) * 100 * sensitivity)
+        elif rot < -math.pi/4 and dist > 1:
+            msg.rotation = -100
+        elif rot > math.pi/4 and dist > 1:
+            msg.rotation = 100
+        else:
+            msg.rotation = int((rot / (math.pi/4)) * 100 * sensitivity)
 
-    pubDrive.publish(msg)
+        # forward
+        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.1 else 0
 
-def fetch2(ball_pos_img: BallPosImg):
-    global count
-    c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
-    # print(f"C: {c}, R: {r}, S: {s}")
-    r = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
-    y = dist_factor / s
-    msg = Drive()
-    msg.rotation = int(((r + math.pi) % (2 * math.pi) - math.pi) / math.pi * 100)
-    msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
-    pubDrive.publish(msg)
-    count += 1
-    t = time.time() - start
-    if t > 10:
-        print(count/t)
-        pubArms.publish(True)
-        pubBD.publish(True)
-        pubRTS.publish(True)
-        rospy.sleep(0.5)
-        rospy.signal_shutdown("time limit")
+        pubDrive.publish(msg)
 
 if __name__ == '__main__':
     rospy.init_node('fetch_ball')

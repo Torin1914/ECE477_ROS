@@ -8,43 +8,64 @@ from std_msgs.msg import Bool
 displaceX, displaceY = 0, 0
 velX, velY = 0, 0
 adisplace = 0
+oldDisX, oldDisY = 0, 0  # Declare oldDisX and oldDisY as global variables
 
 dt = 1.0/60
+
+flag = False
 
 pubUart = None
 
 def return_ball(data: bool):
-    # if not data: return
-
-    print("************returning ball to sender")
-
-    global pubUart
-
-    y = m.sqrt(displaceX**2 + displaceY**2)
-
+    global displaceX, displaceY, adisplace, oldDisX, oldDisY, pubUart, oldAdis, rotation
     msg = Drive()
-    msg.rotation = int(adisplace)
-    # msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+    rotation = (m.pi/2) - adisplace
+    rotation = (m.degrees(rotation) % 360) - 180
+    rotation *= 100 / 180
+    
+    
+    oldDisY = displaceY
+    oldDisX = displaceX
+    oldAdis = adisplace
+    displaceY = 0 
+    displaceX = 0
+    adisplace = 0 
+    
+    flag = True
 
-    msg.forward = 60
-    rospy.sleep(0.1)
     pubUart.publish(msg)
-    rospy.sleep(0.5)
-    rospy.signal_shutdown("return ball to sender")
-
 
 def integrate(data: IMU):
-    global displaceX, displaceY, velX, velY, adisplace
+    global displaceX, displaceY, velX, velY, adisplace, oldDisX, oldDisY, pubUart
 
     # print(f"AccelX: {data.accelx}, AccelY: {data.accely}, GyroZ: {data.gyroz}")
 
-    displaceX += velX * dt + data.accelx * dt**2 / 2
-    displaceY += velY * dt + data.accely * dt**2 / 2
+    displaceX += velX * dt + data.accelx * dt**2 / 2 #once got signal to return to sender change this to 0
+    displaceY += velY * dt + data.accely * dt**2 / 2 #once got signal to return to sender change this to 0
 
-    velX += data.accelx * dt
-    velY += data.accely * dt
+    velX += data.accelx * dt #once got signal to return to sender change this to 0
+    velY += data.accely * dt #once got signal to return to sender change this to 0
 
-    adisplace += data.gyroz * dt
+    adisplace += data.gyroz * dt #once got signal to return to sender change this to 0
+    #-pi/4 to pi/4
+    if flag:
+        print("RETURN TO USER STARTED")
+        msg = Drive()
+        if rotation != adisplace:
+            msg.rotation = 50
+        else:
+            pass
+        
+        if (0.9 * displaceX) < oldDisX < (1.1 * displaceX):
+            pass
+        elif(0.9 * displaceY) < oldDisY < (1.1 * displaceY):
+            pass
+        if displaceY < oldDisY or displaceX < oldDisX:
+            msg.forward = 75
+        elif displaceY > oldDisY or displaceX > oldDisX:
+            msg.forward = -75
+        pubUart.publish(msg)
+
 
 if __name__ == '__main__':
     rospy.init_node("return_to_sender")
@@ -54,3 +75,4 @@ if __name__ == '__main__':
 
     pubUart = rospy.Publisher("driveFinal", Drive, queue_size=10)
     rospy.spin()
+    

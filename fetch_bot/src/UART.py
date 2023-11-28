@@ -40,9 +40,13 @@ class UART:
 	def return_ball(self, data: Drive):
 		print(f"************ final directions")
 		self.motor_controls(data)
-		rospy.sleep(2)
-		self.servo_controls(0)
-		rospy.signal_shutdown("last control")
+		# rospy.sleep(1.5)
+		# msg = Drive()
+		# msg.forward = 0
+		# msg.rotation = 0
+		# self.motor_controls(msg)
+		# self.servo_controls(0)
+		# rospy.signal_shutdown("last control")
 	
 	#RECEIVE
 	def invalid_message(self):
