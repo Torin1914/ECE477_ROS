@@ -138,15 +138,12 @@ def fetch(ball_pos_img: BallPosImg):
         msg = Drive()
 
         # rotation
-        if -math.pi/4 <= rot <= math.pi/4 and dist > 1:
-            # Map the angle to the range -100 to 100
-            msg.rotation = int((rot / (math.pi/4)) * 100 * sensitivity)
-        elif rot < -math.pi/4 and dist > 1:
+        if rot < -math.pi/4 and dist > 1:
             msg.rotation = -100
         elif rot > math.pi/4 and dist > 1:
             msg.rotation = 100
         else:
-            msg.rotation = int((rot / (math.pi/4)) * 100 * sensitivity)
+            msg.rotation = int((rot / (math.pi/2)) * 100 * sensitivity)
 
         # forward
         msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.1 else 0
