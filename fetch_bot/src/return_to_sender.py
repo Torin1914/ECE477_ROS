@@ -20,22 +20,29 @@ pubUart = None
 def return_ball(data: bool):
     global displaceX, displaceY, adisplace, oldDisX, oldDisY, pubUart, oldAdis, flag
     
-    flag = True
-    oldDisY = displaceY
-    oldDisX = displaceX
-    oldAdis = adisplace
-    displaceY = 0 
-    displaceX = 0
-    adisplace = 0 
-
     msg = Drive()
-    msg.rotation = 50 if adisplace > 0 else -50 if adisplace < 0 else 0
-    msg.forward = 0
+    
+    # want to calc angle to rotate, then to rotate that angle calc rough
+    # estimate of speed and a wait time until stop rotation
+    # at that point ball detection should pick up the endzone ball
+
+    # clockwise rotation is positive
+
+    # a positve adisplace could actually be a negative oh god
+
+    # first mod by 2 pi to get angle on unit circle
+    if adisplace >= 0:
+        adisplace %= m.pi * 2
+    else:
+        adisplace *= -1
+        adisplace %= m.pi * 2
+        adisplace *= -1
+
+    # normalizing angle to usable first is necessary
+
     pubUart.publish(msg)
 
-    # msg.rotation = (m.pi/2) - adisplace
-    # msg.rotation = (m.degrees(rotation) % 360) - 180
-    # msg.rotation *= 100 / 180
+    msg.rotation = (m.pi/2) - adisplace
 
 def integrate(data: IMU):
     global displaceX, displaceY, velX, velY, adisplace, oldDisX, oldDisY, pubUart
@@ -62,14 +69,6 @@ def integrate(data: IMU):
         if msg.rotation != adisplace:
             msg.rotation = 50
         
-        if (0.9 * displaceX) < oldDisX < (1.1 * displaceX):
-            pass
-        elif(0.9 * displaceY) < oldDisY < (1.1 * displaceY):
-            pass
-        if displaceY < oldDisY or displaceX < oldDisX:
-            msg.forward = 75
-        elif displaceY > oldDisY or displaceX > oldDisX:
-            msg.forward = -75
         pubUart.publish(msg)
 
 
