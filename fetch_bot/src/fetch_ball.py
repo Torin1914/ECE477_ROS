@@ -14,7 +14,7 @@ frame_width = 1280.0 # in pixels
 frame_height = 720.0 # in pixels
 camera_fov_deg = 175.0  # in degrees
 
-frame_width_center = frame_width / 2
+frame_width_center = frame_width / 2 + 20
 center_width = frame_width * center_threshold
 center_left = frame_width_center - center_width / 2
 center_right = frame_width_center + center_width / 2
@@ -114,7 +114,7 @@ def fetch(ball_pos_img: BallPosImg):
 
             last_c, last_r, last_s = -2, -2, -2
             frames_caught = 0
-    elif flag and s >= 100 and isInCenter(c):
+    elif flag and s >= 115 and isInCenter(c):
         # call return to sender final rotation
         print("*******************FINAL ROTATION****************")
         pubArms.publish(False)
@@ -124,7 +124,7 @@ def fetch(ball_pos_img: BallPosImg):
     else:
         last_c, last_r, last_s = c, r, s
         # Calculate horizontal angle based on the camera's FOV
-        rot = math.radians((c - (frame_width / 2)) / (frame_width / 2) * (camera_fov_deg / 2))
+        rot = math.radians((c - frame_width_center) / frame_width_center * (camera_fov_deg / 2))
 
         # Calculate distance to the ball based on the apparent size
         dist = dist_factor / s

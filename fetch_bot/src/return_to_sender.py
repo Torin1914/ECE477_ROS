@@ -17,7 +17,6 @@ def aEffort2aVel(aEffort: int):
     return 0.11 * aEffort - 1.22
 
 def final_rotation(data: bool):
-    print("************FINAL 2 ROTATION*********")
     global adisplace
     twoPi = m.pi * 2
     angle2rotate = 0
@@ -25,6 +24,7 @@ def final_rotation(data: bool):
     msg = Drive()
     msg.forward = 0
 
+    adisplace = m.radians(adisplace)
     adisplace %= twoPi
 
     if adisplace > m.pi:
@@ -33,16 +33,16 @@ def final_rotation(data: bool):
         angle2rotate = adisplace * -1
 
     # arbitrary rotation effort
-    msg.rotation = 40
+    msg.rotation = 50
     pubUart.publish(msg)
 
     # use Zach's fancy function to figure out how long to spin based on rotation effort
-    aVel = aEffort2aVel(msg.rotation)
-    time = angle2rotate / aVel
+    aVel = aEffort2aVel(msg.rotation) * m.pi / 180
+    time = abs(angle2rotate / aVel)
     rospy.sleep(time)
     msg.rotation = 0
     pubUart.publish(msg)
-    rospy.sleep(1)
+    rospy.sleep(4)
     rospy.signal_shutdown("done")
 
 def integrate(data: IMU):
