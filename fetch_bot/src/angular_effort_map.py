@@ -17,21 +17,22 @@ drive.rotation = 100
 def handler(signum, frame): #called when ctrl-C interrupt is detected
     global rows
     print('Ctrl-C detected')
+    print(rows)
     with open("angular_to_velocity.csv", 'w') as csvfile: 
         csvwriter = csv.writer(csvfile)  
-        csvwriter.writerows(rows) 
-        sleep(0.1)
-        csvfile.close() # when you're done.
+        for row in rows:
+            csvwriter.writerow(row) 
+    sleep(0.1)
 
-def write_angular(data):
+def write_angular(data: IMU):
     global drive
     global count
     global rows
-    row = [drive.rotate, data.gyroz]
+    row = [drive.rotation, data.gyroz]
     if count > 50:
         count = 0
-        if drive.rotate > 0:
-            drive.rotate = drive.rotate - 10
+        if drive.rotation > 0:
+            drive.rotation = drive.rotation - 10
         pubUart.publish(drive)
     else:
         count = count + 1
