@@ -167,6 +167,7 @@ catkin_install_python(PROGRAMS
   src/fetch_ball.py
   src/UART.py
   src/return_to_sender.py
+  src/angular_effort_map.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -194,6 +195,8 @@ catkin_install_python(PROGRAMS
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
   launch/run.launch
+  launch/angular.launch
+
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 

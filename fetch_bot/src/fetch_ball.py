@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
 import math
-import numpy as np
 import rospy
-import time
 from fetch_bot.msg import BallPosImg
 from fetch_bot.msg import Drive
 from std_msgs.msg import Bool
-from std_msgs.msg import Float32
 
 near_edge_threshold = 0.1
 center_threshold = 0.1
 sensitivity = 0.8
-dist_factor = 16.1
+dist_factor = 16.1 # took a lot of trial and error to calculate
 
 frame_width = 1280.0 # in pixels
 frame_height = 720.0 # in pixels
@@ -24,13 +21,6 @@ center_right = frame_width_center + center_width / 2
 
 catchable_ball_size = 110.0
 catchable_ball_row = 400.0
-
-start = 0
-count = 0
-
-c_values = []
-r_values = []
-s_values = []
 
 last_c, last_r, last_s = -1, -1, -1
 
@@ -61,9 +51,7 @@ def isCatchable(c, r, s):
         return False
 
 def fetch(ball_pos_img: BallPosImg):
-    global c_values, r_values, s_values
     global last_c, last_r, last_s
-
     global frames_caught, frame_num, last_caught_frame_num
     global dist, rot
     global pubBD, pubDrive, pubRTS, pubArms
@@ -75,10 +63,6 @@ def fetch(ball_pos_img: BallPosImg):
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
     print(f"C: {c}, R: {r}, S: {s}")
 
-    c_values.append(c)
-    r_values.append(r)
-    s_values.append(s)
-    
     # if don't see ball
     if c == -1 and r == -1 and s == -1:
         # if last seen ball pos is near left or right edge then move robot that direction
@@ -116,6 +100,11 @@ def fetch(ball_pos_img: BallPosImg):
 
                 # open arms
                 pubArms.publish(False)
+
+                # back up slightly
+                msg = Drive()
+                msg.forward = -50
+                pubDrive.publish(msg)
         elif frames_caught >= 3:
             # start detecting green ball
             pubBD.publish(True)
@@ -125,27 +114,13 @@ def fetch(ball_pos_img: BallPosImg):
 
             last_c, last_r, last_s = -1, -1, -1
             frames_caught = 0
-
-            '''
-            # stop ball detection
-            pubBD.publish(True)
-            
-            # start return to sender
-            pubRTS.publish(True)
-
-            # turn off fetch_ball node
-            rospy.sleep(0.5)
-            rospy.signal_shutdown("time limit")
-            '''
     elif flag and s >= 100 and isInCenter(c):
-        # stop and release ball
-        msg = Drive()
-        msg.forward = 0
-        msg.rotation = 0
-        pubDrive.publish(msg)
+        # call return to sender final rotation
+        pubRTS.publish(True)
+        rospy.sleep(2)
         pubArms.publish(False)
         rospy.sleep(1)
-        rospy.signal_shutdown("time limit")
+        rospy.signal_shutdown("done")
     else:
         last_c, last_r, last_s = c, r, s
         # Calculate horizontal angle based on the camera's FOV
@@ -175,11 +150,10 @@ def fetch(ball_pos_img: BallPosImg):
 
 if __name__ == '__main__':
     rospy.init_node('fetch_ball')
-    pubBD = rospy.Publisher("fetchBall2ballDetect", Bool, queue_size=10)
-    pubRTS = rospy.Publisher("fetchBall2return2sender", Bool, queue_size=10)
+    pubBD = rospy.Publisher("switch_colors", Bool, queue_size=10)
+    pubRTS = rospy.Publisher("final_rotation", Bool, queue_size=10)
     pubArms = rospy.Publisher("closeArmsUART", Bool, queue_size=10)
     pubDrive = rospy.Publisher("drive", Drive, queue_size=10)
 
-    start = time.time()
     rospy.Subscriber("ballDetect2fetchBall", BallPosImg, fetch)
     rospy.spin()

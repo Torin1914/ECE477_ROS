@@ -1,0 +1,7 @@
+<launch>
+  <!-- Start Node 2 -->
+  <node name="angular_map" pkg="fetch_bot" type="angular_effort_map.py" output="screen"/>
+
+  <!-- Start Node 3 -->
+  <node name="UART" pkg="fetch_bot" type="UART.py" output="screen"/>
+</launch>

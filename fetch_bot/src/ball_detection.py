@@ -8,19 +8,14 @@ from std_msgs.msg import Bool
 video = None
 flag = False
 
-def shutdown(data: bool):
-    # global video
+def switch_color(data: bool):
     global flag
-    if data:
-        flag = True
-        # video.release()
-        # print("************ball detection stopped")
-        # rospy.signal_shutdown("STOP BALL DETECTION")
+    if data: flag = True
 
 if __name__ == '__main__':
     rospy.init_node("ball_detection")
     pub = rospy.Publisher("ballDetect2fetchBall", BallPosImg, queue_size=10)
-    rospy.Subscriber("fetchBall2ballDetect", Bool, shutdown, queue_size=10)
+    rospy.Subscriber("switch_colors", Bool, switch_color, queue_size=10)
 
     msg_send = BallPosImg()
     
@@ -70,7 +65,6 @@ if __name__ == '__main__':
         out_send.write(frame)
         # cv.imshow("", frame)
         # if cv.waitKey(1) & 0xFF == ord('q'): break
-
 
     video.release()
     cv.destroyAllWindows()

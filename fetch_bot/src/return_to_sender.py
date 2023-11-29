@@ -8,44 +8,43 @@ from std_msgs.msg import Bool
 displaceX, displaceY = 0, 0
 velX, velY = 0, 0
 adisplace = 0
-oldDisX, oldDisY = 0, 0  # Declare oldDisX and oldDisY as global variables
-oldAdis = 0
 
 dt = 1.0/60
 
-flag = False
-
 pubUart = None
 
-def return_ball(data: bool):
-    global displaceX, displaceY, adisplace, oldDisX, oldDisY, pubUart, oldAdis, flag
-    
+def final_rotation(data: bool):
+    twoPi = m.pi * 2
+    angle2rotate = 0
+
     msg = Drive()
-    
-    # want to calc angle to rotate, then to rotate that angle calc rough
-    # estimate of speed and a wait time until stop rotation
-    # at that point ball detection should pick up the endzone ball
+    msg.forward = 0
 
-    # clockwise rotation is positive
+    adisplace %= twoPi
 
-    # a positve adisplace could actually be a negative oh god
-
-    # first mod by 2 pi to get angle on unit circle
-    if adisplace >= 0:
-        adisplace %= m.pi * 2
+    if adisplace > m.pi:
+        angle2rotate = twoPi - adisplace
     else:
-        adisplace *= -1
-        adisplace %= m.pi * 2
-        adisplace *= -1
+        angle2rotate = adisplace * -1
 
-    # normalizing angle to usable first is necessary
-
+    # copied from fetch_ball
+    if angle2rotate < -m.pi/4:
+        msg.rotation = -100
+    elif angle2rotate > m.pi/4:
+        msg.rotation = 100
+    else:
+        msg.rotation = int((angle2rotate / (m.pi/2)) * 100)
     pubUart.publish(msg)
 
-    msg.rotation = (m.pi/2) - adisplace
+    # use Zach's fancy function to figure out how long to spin
+    rospy.sleep(1)
+    msg.rotation = 0
+    pubUart.publish(msg)
+    rospy.sleep(1)
+    rospy.signal_shutdown("done")
 
 def integrate(data: IMU):
-    global displaceX, displaceY, velX, velY, adisplace, oldDisX, oldDisY, pubUart
+    global displaceX, displaceY, velX, velY, adisplace
 
     # print(f"AccelX: {data.accelx}, AccelY: {data.accely}, GyroZ: {data.gyroz}")
 
@@ -56,27 +55,12 @@ def integrate(data: IMU):
     velY += data.accely * dt
 
     adisplace += data.gyroz * dt
-    
-    if flag:
-        msg = Drive()
-
-        
-
-
-
-
-        
-        if msg.rotation != adisplace:
-            msg.rotation = 50
-        
-        pubUart.publish(msg)
-
 
 if __name__ == '__main__':
     rospy.init_node("return_to_sender")
 
-    rospy.Subscriber("fetchBall2return2sender", Bool, return_ball)
-    rospy.Subscriber("uart2return2sender", IMU, integrate)
+    rospy.Subscriber("final_rotation", Bool, final_rotation)
+    rospy.Subscriber("imu", IMU, integrate)
 
     pubUart = rospy.Publisher("driveFinal", Drive, queue_size=10)
     rospy.spin()
