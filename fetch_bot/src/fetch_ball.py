@@ -22,8 +22,8 @@ center_width = frame_width * center_threshold
 center_left = frame_width_center - center_width / 2
 center_right = frame_width_center + center_width / 2
 
-catchable_ball_size = 100.0 # something like this
-catchable_ball_row = 300.0 # something like this
+catchable_ball_size = 110.0 # something like this
+catchable_ball_row = 400.0 # something like this
 
 start = 0
 count = 0
@@ -46,6 +46,8 @@ pubDrive = None
 pubRTS = None
 pubArms = None
 
+flag = False
+
 def isInCenter(c):
     if c > center_left and c < center_right:
         return True
@@ -66,6 +68,7 @@ def fetch(ball_pos_img: BallPosImg):
     global dist, rot
     global pubBD, pubDrive, pubRTS, pubArms
     global center_threshold, catchable_ball_row
+    global flag
 
 
     frame_num += 1
@@ -88,7 +91,7 @@ def fetch(ball_pos_img: BallPosImg):
         else:
             # drive forward
             dist = 1
-    elif isCatchable(c, r, s):
+    elif not flag and isCatchable(c, r, s):
         print("***********CATCHABLE************")
         if frames_caught == 0:
             # close arms
@@ -109,20 +112,37 @@ def fetch(ball_pos_img: BallPosImg):
 
                 # decrease thresholds
                 center_threshold = 0.1
-                catchable_ball_row = 300
+                catchable_ball_row = 400
 
                 # open arms
                 pubArms.publish(False)
         elif frames_caught >= 3:
-            # stop ball detection
+            # start detecting green ball
             pubBD.publish(True)
 
+            # toggle flag
+            flag = True
+
+            '''
+            # stop ball detection
+            pubBD.publish(True)
+            
             # start return to sender
             pubRTS.publish(True)
 
             # turn off fetch_ball node
             rospy.sleep(0.5)
             rospy.signal_shutdown("time limit")
+            '''
+    elif flag and s >= 100 and isInCenter(c):
+        # stop and release ball
+        msg = Drive()
+        msg.forward = 0
+        msg.rotation = 0
+        pubDrive.publish(msg)
+        pubArms.publish(False)
+        rospy.sleep(0.5)
+        rospy.signal_shutdown("time limit")
     else:
         last_c, last_r, last_s = c, r, s
         # Calculate horizontal angle based on the camera's FOV
@@ -143,7 +163,7 @@ def fetch(ball_pos_img: BallPosImg):
         elif rot > math.pi/4 and dist > 1:
             msg.rotation = 100
         else:
-            msg.rotation = int((rot / (math.pi/2)) * 100 * sensitivity)
+            msg.rotation = int((rot / (math.pi/2)) * 100)
 
         # forward
         msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.1 else 0

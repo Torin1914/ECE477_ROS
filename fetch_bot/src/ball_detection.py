@@ -6,13 +6,16 @@ from fetch_bot.msg import BallPosImg
 from std_msgs.msg import Bool
 
 video = None
+flag = False
 
 def shutdown(data: bool):
-    global video
+    # global video
+    global flag
     if data:
-        video.release()
-        print("************ball detection stopped")
-        rospy.signal_shutdown("STOP BALL DETECTION")
+        flag = True
+        # video.release()
+        # print("************ball detection stopped")
+        # rospy.signal_shutdown("STOP BALL DETECTION")
 
 if __name__ == '__main__':
     rospy.init_node("ball_detection")
@@ -23,7 +26,7 @@ if __name__ == '__main__':
     
     pipeline = (
             "nvarguscamerasrc ! "
-            "video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)120/1 ! "
+            "video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)30/1 ! "
             "nvvidconv flip-method=2 ! "
             "video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! "
             "videoconvert ! "
@@ -41,16 +44,20 @@ if __name__ == '__main__':
     lower_pink = np.array([140, 100, 50])   # Lower bound for pink color in HSV
     upper_pink = np.array([170, 255, 255])  # Upper bound for pink color in HSV
 
+    # green thresholds
+    lower_green = np.array([35, 100, 50])   # Lower bound for green color in HSV
+    upper_green = np.array([75, 255, 255])  # Upper bound for green color in HSV
+
     while not rospy.is_shutdown():
         ret, frame = video.read()
         if not ret: break
 
         frame_hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-        pink_mask = cv.inRange(frame_hsv, lower_pink, upper_pink)
+        color_mask = cv.inRange(frame_hsv, lower_pink, upper_pink) if not flag else cv.inRange(frame_hsv, lower_green, upper_green)
 
-        blurFrame = cv.GaussianBlur(pink_mask, (17,17), 0)
+        blurFrame = cv.GaussianBlur(color_mask, (17,17), 0)
         circles = cv.HoughCircles(blurFrame, cv.HOUGH_GRADIENT, 1.4, 5000,
-                                param1=170, param2=20, minRadius=0, maxRadius=300)
+                                param1=170, param2=20, minRadius=0, maxRadius=400)
         
         if circles is not None:
             # column, row, size (radius of ball in pixels)
