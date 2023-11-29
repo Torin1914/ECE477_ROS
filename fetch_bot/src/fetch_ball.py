@@ -22,8 +22,8 @@ center_width = frame_width * center_threshold
 center_left = frame_width_center - center_width / 2
 center_right = frame_width_center + center_width / 2
 
-catchable_ball_size = 110.0 # something like this
-catchable_ball_row = 400.0 # something like this
+catchable_ball_size = 110.0
+catchable_ball_row = 400.0
 
 start = 0
 count = 0
@@ -123,6 +123,9 @@ def fetch(ball_pos_img: BallPosImg):
             # toggle flag
             flag = True
 
+            last_c, last_r, last_s = -1, -1, -1
+            frames_caught = 0
+
             '''
             # stop ball detection
             pubBD.publish(True)
@@ -141,7 +144,7 @@ def fetch(ball_pos_img: BallPosImg):
         msg.rotation = 0
         pubDrive.publish(msg)
         pubArms.publish(False)
-        rospy.sleep(0.5)
+        rospy.sleep(1)
         rospy.signal_shutdown("time limit")
     else:
         last_c, last_r, last_s = c, r, s
@@ -166,7 +169,7 @@ def fetch(ball_pos_img: BallPosImg):
             msg.rotation = int((rot / (math.pi/2)) * 100)
 
         # forward
-        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.1 else 0
+        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.15 else 0
 
         pubDrive.publish(msg)
 

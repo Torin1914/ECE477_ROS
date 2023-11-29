@@ -35,7 +35,7 @@ if __name__ == '__main__':
     )
     video = cv.VideoCapture(pipeline, cv.CAP_GSTREAMER)
     
-    # out_send = cv.VideoWriter('appsrc ! videoconvert ! omxh264enc control-rate=constant bitrate=5000000 iframeinterval=15 ! h264parse ! rtph264pay pt=96 config-interval=10 ! udpsink host=192.168.0.100 port=5000 sync=false', cv.CAP_GSTREAMER, 0, 30, (1280, 720))
+    out_send = cv.VideoWriter('appsrc ! videoconvert ! omxh264enc control-rate=constant bitrate=5000000 iframeinterval=15 ! h264parse ! rtph264pay pt=96 config-interval=10 ! udpsink host=192.168.0.103 port=5000 sync=false', cv.CAP_GSTREAMER, 0, 30, (1280, 720))
 
     if not video.isOpened():
         print("Camera not opened")
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         else:
             msg_send.c, msg_send.r, msg_send.s = -1, -1, -1
         pub.publish(msg_send)
-        # out_send.write(frame)
+        out_send.write(frame)
         # cv.imshow("", frame)
         # if cv.waitKey(1) & 0xFF == ord('q'): break
 
