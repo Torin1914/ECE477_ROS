@@ -39,7 +39,7 @@ pubArms = None
 flag = False
 
 def isInCenter(c):
-    if c > center_left * 1.2 and c < center_right:
+    if c > center_left and c < center_right:
         return True
     else:
         return False
@@ -129,7 +129,7 @@ def fetch(ball_pos_img: BallPosImg):
         # Calculate distance to the ball based on the apparent size
         dist = dist_factor / s
 
-    # print(f"rot: {rot}, dist: {dist}")
+    print(f"rot: {rot}, dist: {dist}")
 
     if frames_caught == 0:
         # send motor power percents to uart
@@ -144,8 +144,9 @@ def fetch(ball_pos_img: BallPosImg):
             msg.rotation = int((rot / (math.pi/2)) * 100)
 
         # forward
-        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.15 else 0
+        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.2 else 0
 
+        print(f"Foward: {msg.foward}, Rotation: {msg.rotation}")
         pubDrive.publish(msg)
 
 if __name__ == '__main__':

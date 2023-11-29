@@ -178,7 +178,7 @@ if __name__ == "__main__":
 	rospy.Subscriber("drive", Drive, uart.motor_controls, queue_size=10)
 	rospy.Subscriber("driveFinal", Drive, uart.return_ball, queue_size=10)
 
-	pub = rospy.Publisher("uart2return2sender", IMU, queue_size=10)
+	pub = rospy.Publisher("imu", IMU, queue_size=10)
 	# t = time.time()
 	# flag = True
 	while not rospy.is_shutdown():
