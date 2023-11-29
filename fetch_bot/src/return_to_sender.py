@@ -13,13 +13,11 @@ dt = 1.0/60
 
 pubUart = None
 
-def aVel2aEffort(aVel: float):
-    return 10 * aVel + 65.4
-
 def aEffort2aVel(aEffort: int):
-    return 0.1 * aEffort - 0.654
+    return 0.11 * aEffort - 1.22
 
 def final_rotation(data: bool):
+    print("************FINAL 2 ROTATION*********")
     global adisplace
     twoPi = m.pi * 2
     angle2rotate = 0
@@ -34,11 +32,11 @@ def final_rotation(data: bool):
     else:
         angle2rotate = adisplace * -1
 
-    # copied from fetch_ball
-    msg.rotation = 70
+    # arbitrary rotation effort
+    msg.rotation = 40
     pubUart.publish(msg)
 
-    # use Zach's fancy function to figure out how long to spin
+    # use Zach's fancy function to figure out how long to spin based on rotation effort
     aVel = aEffort2aVel(msg.rotation)
     time = angle2rotate / aVel
     rospy.sleep(time)

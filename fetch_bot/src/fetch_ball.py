@@ -112,14 +112,14 @@ def fetch(ball_pos_img: BallPosImg):
             # toggle flag
             flag = True
 
-            last_c, last_r, last_s = -1, -1, -1
+            last_c, last_r, last_s = -2, -2, -2
             frames_caught = 0
     elif flag and s >= 100 and isInCenter(c):
         # call return to sender final rotation
-        pubRTS.publish(True)
-        rospy.sleep(2)
+        print("*******************FINAL ROTATION****************")
         pubArms.publish(False)
-        rospy.sleep(1)
+        pubRTS.publish(True)
+        rospy.sleep(3)
         rospy.signal_shutdown("done")
     else:
         last_c, last_r, last_s = c, r, s
@@ -129,7 +129,7 @@ def fetch(ball_pos_img: BallPosImg):
         # Calculate distance to the ball based on the apparent size
         dist = dist_factor / s
 
-    print(f"rot: {rot}, dist: {dist}")
+    # print(f"rot: {rot}, dist: {dist}")
 
     if frames_caught == 0:
         # send motor power percents to uart
@@ -144,9 +144,13 @@ def fetch(ball_pos_img: BallPosImg):
             msg.rotation = int((rot / (math.pi/2)) * 100)
 
         # forward
-        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.2 else 0
+        msg.forward = 106 if dist > 1 else 75 if dist > 0.25 else 40 if dist > 0.12 else 0
 
-        print(f"Foward: {msg.foward}, Rotation: {msg.rotation}")
+        # print(f"Foward: {msg.forward}, Rotation: {msg.rotation}")
+
+        if flag and last_c == -2:
+            msg.rotation = 50
+            msg.forward = 0
         pubDrive.publish(msg)
 
 if __name__ == '__main__':

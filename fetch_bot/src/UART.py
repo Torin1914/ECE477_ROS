@@ -28,7 +28,6 @@ class UART:
 	#SEND
 	def motor_controls(self, data):
 		self.m_serial_port.write(bytearray([85, 0, data.forward + 100, data.rotation + 100, 0, 0, 0, 0]))
-		pass
 
 	def servo_controls(self, actuated):
 		actuated = 1 if actuated else 0
@@ -38,15 +37,7 @@ class UART:
 		self.m_serial_port.write(bytearray([85, 4, 0, 0, 0, 0, 0, 0]))
 
 	def return_ball(self, data: Drive):
-		print(f"************ final directions")
 		self.motor_controls(data)
-		# rospy.sleep(1.5)
-		# msg = Drive()
-		# msg.forward = 0
-		# msg.rotation = 0
-		# self.motor_controls(msg)
-		# self.servo_controls(0)
-		# rospy.signal_shutdown("last control")
 	
 	#RECEIVE
 	def invalid_message(self):

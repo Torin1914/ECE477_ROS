@@ -32,7 +32,7 @@ def write_angular(data: IMU):
     if count > 50:
         count = 0
         if drive.rotation > 0:
-            drive.rotation = drive.rotation - 10
+            drive.rotation = drive.rotation - 2
         pubUart.publish(drive)
     else:
         count = count + 1
