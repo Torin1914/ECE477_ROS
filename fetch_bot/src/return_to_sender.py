@@ -14,6 +14,7 @@ dt = 1.0/60
 pubUart = None
 
 def final_rotation(data: bool):
+    global adisplace
     twoPi = m.pi * 2
     angle2rotate = 0
 

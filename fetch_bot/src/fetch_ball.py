@@ -39,7 +39,7 @@ pubArms = None
 flag = False
 
 def isInCenter(c):
-    if c > center_left and c < center_right:
+    if c > center_left * 1.2 and c < center_right:
         return True
     else:
         return False
