@@ -13,6 +13,12 @@ dt = 1.0/60
 
 pubUart = None
 
+def aVel2aEffort(aVel: float):
+    return 10 * aVel + 65.4
+
+def aEffort2aVel(aEffort: int):
+    return 0.1 * aEffort - 0.654
+
 def final_rotation(data: bool):
     global adisplace
     twoPi = m.pi * 2
@@ -29,16 +35,13 @@ def final_rotation(data: bool):
         angle2rotate = adisplace * -1
 
     # copied from fetch_ball
-    if angle2rotate < -m.pi/4:
-        msg.rotation = -100
-    elif angle2rotate > m.pi/4:
-        msg.rotation = 100
-    else:
-        msg.rotation = int((angle2rotate / (m.pi/2)) * 100)
+    msg.rotation = 70
     pubUart.publish(msg)
 
     # use Zach's fancy function to figure out how long to spin
-    rospy.sleep(1)
+    aVel = aEffort2aVel(msg.rotation)
+    time = angle2rotate / aVel
+    rospy.sleep(time)
     msg.rotation = 0
     pubUart.publish(msg)
     rospy.sleep(1)
