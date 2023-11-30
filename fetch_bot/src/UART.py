@@ -3,6 +3,7 @@ import time
 import serial
 import rospy
 import signal
+import math as m
 from functools import partial
 from std_msgs.msg import Bool
 from fetch_bot.msg import Drive
@@ -37,10 +38,7 @@ class UART:
 		self.m_serial_port.write(bytearray([85, 4, 0, 0, 0, 0, 0, 0]))
 
 	def return_ball(self, data: Drive):
-		print(f"************ final directions")
 		self.motor_controls(data)
-		rospy.sleep(0.5)
-		rospy.signal_shutdown("last control")
 	
 	#RECEIVE
 	def invalid_message(self):
@@ -161,17 +159,35 @@ def shutdown(signum, frame, uart2: UART):
 	msg.forward = 0
 	msg.rotation = 0
 	uart2.motor_controls(msg)
+	uart2.servo_controls(0)
+
+def aEffort2aVel(aEffort: int):
+    return 0.11 * aEffort - 1.22
+
+def start_spin(uart2: UART):
+	msg = Drive()
+	msg.rotation = 75
+	uart2.motor_controls(msg)
+
+	aVel = aEffort2aVel(msg.rotation) * m.pi / 180
+	time = abs(2*m.pi / aVel)
+	rospy.sleep(time)
+	msg.rotation = 0
+	uart2.motor_controls(msg)
 
 if __name__ == "__main__":
 	uart = UART()
 	shutdown2 = partial(shutdown, uart2=uart)
 	signal.signal(signal.SIGINT, shutdown2)
 	rospy.init_node("UART")
+
+	# start_spin(uart)
+
 	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls, queue_size=10)
 	rospy.Subscriber("drive", Drive, uart.motor_controls, queue_size=10)
 	rospy.Subscriber("driveFinal", Drive, uart.return_ball, queue_size=10)
 
-	pub = rospy.Publisher("uart2return2sender", IMU, queue_size=10)
+	pub = rospy.Publisher("imu", IMU, queue_size=10)
 	# t = time.time()
 	# flag = True
 	while not rospy.is_shutdown():

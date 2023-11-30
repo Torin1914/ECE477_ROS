@@ -13,25 +13,37 @@ dt = 1.0/60
 
 pubUart = None
 
-def return_ball(data: bool):
-    # if not data: return
+def aEffort2aVel(aEffort: int):
+    return 0.11 * aEffort - 1.22
 
-    print("************returning ball to sender")
-
-    global pubUart
-
-    y = m.sqrt(displaceX**2 + displaceY**2)
+def final_rotation(data: bool):
+    global adisplace
+    twoPi = m.pi * 2
+    angle2rotate = 0
 
     msg = Drive()
-    msg.rotation = int(adisplace)
-    # msg.forward = 100 if y > 1 else 75 if y > 0.75 else 50
+    msg.forward = 0
 
-    msg.forward = 1234567
-    rospy.sleep(0.5)
+    adisplace = m.radians(adisplace)
+    adisplace %= twoPi
+
+    if adisplace > m.pi:
+        angle2rotate = twoPi - adisplace
+    else:
+        angle2rotate = adisplace * -1
+
+    # arbitrary rotation effort
+    msg.rotation = 50
     pubUart.publish(msg)
-    rospy.sleep(0.5)
-    rospy.signal_shutdown("return ball to sender")
 
+    # use Zach's fancy function to figure out how long to spin based on rotation effort
+    aVel = aEffort2aVel(msg.rotation) * m.pi / 180
+    time = abs(angle2rotate / aVel)
+    rospy.sleep(time)
+    msg.rotation = 0
+    pubUart.publish(msg)
+    rospy.sleep(4)
+    rospy.signal_shutdown("done")
 
 def integrate(data: IMU):
     global displaceX, displaceY, velX, velY, adisplace
@@ -49,8 +61,9 @@ def integrate(data: IMU):
 if __name__ == '__main__':
     rospy.init_node("return_to_sender")
 
-    rospy.Subscriber("fetchBall2return2sender", Bool, return_ball)
-    rospy.Subscriber("uart2return2sender", IMU, integrate)
+    rospy.Subscriber("final_rotation", Bool, final_rotation)
+    rospy.Subscriber("imu", IMU, integrate)
 
     pubUart = rospy.Publisher("driveFinal", Drive, queue_size=10)
     rospy.spin()
+    
