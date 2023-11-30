@@ -22,7 +22,7 @@ center_right = frame_width_center + center_width / 2
 catchable_ball_size = 110.0
 catchable_ball_row = 400.0
 
-last_c, last_r, last_s = -1, -1, -1
+last_c, last_r, last_s = -2, -1, -1
 
 frames_caught = 0
 last_caught_frame_num = 0
@@ -148,7 +148,7 @@ def fetch(ball_pos_img: BallPosImg):
 
         # print(f"Foward: {msg.forward}, Rotation: {msg.rotation}")
 
-        if flag and last_c == -2:
+        if last_c == -2:
             msg.rotation = 50
             msg.forward = 0
         pubDrive.publish(msg)

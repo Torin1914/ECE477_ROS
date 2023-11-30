@@ -181,7 +181,7 @@ if __name__ == "__main__":
 	signal.signal(signal.SIGINT, shutdown2)
 	rospy.init_node("UART")
 
-	start_spin(uart)
+	# start_spin(uart)
 
 	rospy.Subscriber("closeArmsUART", Bool, uart.servo_controls, queue_size=10)
 	rospy.Subscriber("drive", Drive, uart.motor_controls, queue_size=10)
