@@ -55,7 +55,7 @@ def fetch(ball_pos_img: BallPosImg):
     global frames_caught, frame_num, last_caught_frame_num
     global dist, rot
     global pubBD, pubDrive, pubRTS, pubArms
-    global center_threshold, catchable_ball_row
+    global center_threshold, catchable_ball_row, catchable_ball_size
     global flag
 
 
@@ -77,6 +77,9 @@ def fetch(ball_pos_img: BallPosImg):
             dist = 1
     elif not flag and isCatchable(c, r, s):
         print("***********CATCHABLE************")
+        print(f"Frames caught: {frames_caught}")
+        print(f"Last caught frame num: {last_caught_frame_num}")
+        print(f"Frame num: {frame_num}\n")
         if frames_caught == 0:
             # close arms
             pubArms.publish(True)
@@ -84,6 +87,7 @@ def fetch(ball_pos_img: BallPosImg):
             # increase thresholds
             center_threshold = 0.5
             catchable_ball_row = 200
+            catchable_ball_size = 100
 
             frames_caught += 1
             last_caught_frame_num = frame_num
@@ -95,8 +99,8 @@ def fetch(ball_pos_img: BallPosImg):
                 frames_caught = 0
 
                 # decrease thresholds
-                center_threshold = 0.1
-                catchable_ball_row = 400
+                # center_threshold = 0.1
+                # catchable_ball_row = 400
 
                 # open arms
                 pubArms.publish(False)
