@@ -159,7 +159,8 @@ def shutdown(signum, frame, uart2: UART):
 	msg.forward = 0
 	msg.rotation = 0
 	uart2.motor_controls(msg)
-	uart2.servo_controls(0)
+	uart2.servo_controls(False)
+	print("OPENING ARMS")
 
 def aEffort2aVel(aEffort: int):
     return 0.11 * aEffort - 1.22

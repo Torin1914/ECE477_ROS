@@ -58,7 +58,6 @@ def fetch(ball_pos_img: BallPosImg):
     global center_threshold, catchable_ball_row, catchable_ball_size
     global flag
 
-
     frame_num += 1
     c, r, s = ball_pos_img.c, ball_pos_img.r, ball_pos_img.s
     print(f"C: {c}, R: {r}, S: {s}")
@@ -112,6 +111,7 @@ def fetch(ball_pos_img: BallPosImg):
         elif frames_caught >= 3:
             # start detecting green ball
             pubBD.publish(True)
+            print("DETECTING GREEN BALL NOW")
 
             # toggle flag
             flag = True
