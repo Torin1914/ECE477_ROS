@@ -14,7 +14,7 @@ frame_width = 1280.0 # in pixels
 frame_height = 720.0 # in pixels
 camera_fov_deg = 175.0  # in degrees
 
-frame_width_center = frame_width / 2 + 20
+frame_width_center = frame_width / 2 + 50
 center_width = frame_width * center_threshold
 center_left = frame_width_center - center_width / 2
 center_right = frame_width_center + center_width / 2
